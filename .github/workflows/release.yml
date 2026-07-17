@@ -1,0 +1,53 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Build the theme agent (--release 21) + assert class major version 65
+        run: |
+          mkdir -p build/agent
+          javac --release 21 -d build/agent \
+            agent/src/io/github/junkerderprovinz/HighlighterThemeAgent.java
+          # JD runs on Java 21; a class-69 agent crash-loops the GUI. Lock major version 65.
+          javap -v -classpath build/agent io.github.junkerderprovinz.HighlighterThemeAgent \
+            | grep 'major version: 65'
+          ( cd build/agent && jar cfm \
+              "$GITHUB_WORKSPACE/agent/jd-highlighter-agent.jar" \
+              "$GITHUB_WORKSPACE/agent/manifest.mf" io )
+          echo "Built agent/jd-highlighter-agent.jar (Java 21 target)"
+
+      - name: Package the release zip (theme + installers + lib + agent jar)
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          stage="jd-highlighter-${tag}"
+          mkdir -p "$stage/agent"
+          cp -R theme install lib "$stage"/
+          cp agent/jd-highlighter-agent.jar "$stage/agent"/
+          cp README.md LICENSE "$stage"/
+          zip -r "jd-highlighter-${tag}.zip" "$stage"
+          echo "Packaged jd-highlighter-${tag}.zip:"
+          unzip -l "jd-highlighter-${tag}.zip"
+
+      - name: Publish the GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          body_path: .github/release-notes/${{ github.ref_name }}.md
+          files: jd-highlighter-${{ github.ref_name }}.zip
+          fail_on_unmatched_files: true

@@ -1,0 +1,111 @@
+name: Lint
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Validate JSON
+        run: |
+          python - <<'EOF'
+          import json, glob, sys
+          files = glob.glob('theme/**/*.json', recursive=True)
+          if not files:
+              sys.exit('ERROR: no theme JSON files found under theme/ - glob matched nothing')
+          for f in files:
+              with open(f) as fh:
+                  json.load(fh)
+          print(f'JSON OK ({len(files)} file(s))')
+          EOF
+
+      - name: ShellCheck
+        run: |
+          sudo apt-get update && sudo apt-get install -y shellcheck
+          # -s sh: lib/accent.sh is a sourced library with no shebang.
+          # SC1090/SC1091: installers source lib/accent.sh via a computed path (fine, intentional).
+          shellcheck -s sh -e SC1090,SC1091 \
+            install/install.sh install/uninstall.sh lib/accent.sh \
+            test/test-install.sh test/test-accent.sh
+
+      - name: Accent helper test (contrast + template render)
+        run: sh test/test-accent.sh
+
+      - name: Installer integration test
+        run: sh test/test-install.sh
+
+  agent:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Compile the theme agent (--release 21) + assert class major version 65
+        run: |
+          mkdir -p build/agent
+          javac --release 21 -d build/agent \
+            agent/src/io/github/junkerderprovinz/HighlighterThemeAgent.java
+          # JD runs on Java 21; a class-69 (Java 25) agent crash-loops the GUI. Lock major version 65.
+          javap -v -classpath build/agent io.github.junkerderprovinz.HighlighterThemeAgent \
+            | grep 'major version: 65'
+          echo "OK: agent compiles at class major version 65 (Java 21 target)"
+
+  installer-pwsh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Behavioral test of install.ps1 / uninstall.ps1 (pwsh >= 6 path)
+        shell: pwsh
+        run: |
+          # Fake JDownloader dir with a pre-existing GUI settings file.
+          $jd = Join-Path ([IO.Path]::GetTempPath()) ("jd-" + [guid]::NewGuid())
+          New-Item -ItemType Directory -Force -Path (Join-Path $jd "cfg") | Out-Null
+          $gui = Join-Path $jd "cfg/org.jdownloader.settings.GraphicalUserInterfaceSettings.json"
+          '{"foo":"bar"}' | Set-Content -Path $gui -Encoding utf8
+
+          & ./install/install.ps1 -JdDir $jd -Accent "#ffee00"
+          if ($LASTEXITCODE) { throw "install.ps1 exited with $LASTEXITCODE" }
+
+          # 1) Theme JSON copied and still valid.
+          $theme = Join-Path $jd "cfg/laf/FlatDarkLaf.json"
+          if (-not (Test-Path $theme)) { throw "FlatDarkLaf.json was not copied to cfg/laf" }
+          $null = Get-Content $theme -Raw | ConvertFrom-Json
+
+          # 2) Look & Feel set, pre-existing settings preserved.
+          $cfg = Get-Content $gui -Raw | ConvertFrom-Json
+          if ($cfg.lookandfeeltheme -ne 'FLATLAF_DARK') { throw "lookandfeeltheme = '$($cfg.lookandfeeltheme)' (expected FLATLAF_DARK)" }
+          if ($cfg.foo -ne 'bar') { throw "pre-existing settings key was lost" }
+
+          # 3) Accented .properties rendered (both tokens substituted, none left over).
+          $props = Get-Content (Join-Path $jd ".jd-highlighter/flatlaf-defaults/FlatDarkLaf.properties") -Raw
+          if (-not $props.Contains('= #ffee00')) { throw "accent not substituted in .properties" }
+          if (-not $props.Contains('Button.default.foreground       = #161616')) { throw "accent-fg not substituted (yellow -> dark)" }
+          if ($props.Contains('@@')) { throw "leftover @@ token in .properties" }
+
+          # 4) Exactly one -javaagent line, idempotent across a second install.
+          $vmo = Join-Path $jd "JDownloader2.vmoptions"
+          if (-not (Test-Path $vmo)) { throw "JDownloader2.vmoptions not created" }
+          $n = (Get-Content $vmo | Where-Object { $_ -match 'javaagent.*jd-highlighter-agent\.jar' }).Count
+          if ($n -ne 1) { throw "expected 1 -javaagent line, got $n" }
+
+          & ./install/install.ps1 -JdDir $jd -Accent "#ffee00"
+          if ($LASTEXITCODE) { throw "second install.ps1 exited with $LASTEXITCODE" }
+          $n = (Get-Content $vmo | Where-Object { $_ -match 'javaagent.*jd-highlighter-agent\.jar' }).Count
+          if ($n -ne 1) { throw "re-install duplicated the -javaagent line ($n)" }
+
+          # 5) Uninstall strips the line and the theme dir.
+          & ./install/uninstall.ps1 -JdDir $jd
+          if ($LASTEXITCODE) { throw "uninstall.ps1 exited with $LASTEXITCODE" }
+          if (Select-String -Path $vmo -Pattern 'jd-highlighter-agent\.jar' -Quiet) { throw "agent line not removed on uninstall" }
+          if (Test-Path (Join-Path $jd ".jd-highlighter")) { throw ".jd-highlighter dir not removed on uninstall" }
+
+          Write-Host "PASS installer behavioral test (pwsh $($PSVersionTable.PSVersion))"
