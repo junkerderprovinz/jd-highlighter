@@ -1,10 +1,11 @@
 /**
  * Generates the JD Highlighter README banner (house standard):
  *   banner.svg / banner.png : white 1600x500; the recoloured JDownloader logo
- *   (from icon.svg) on the left, "JD Highlighter" in Bree Serif + a claim in
+ *   (from icon.svg) on the left, "JD Highlighter" in Archivo Black (the OFL twin of
+ *   JDownloader's official Arial Black, so the wordmark echoes the JD logo) + a claim in
  *   Lato to the right. Text is baked to paths (opentype.js) so the SVG needs no font.
  *
- * Deps (global): opentype.js, @resvg/resvg-js. Bree Serif + Lato (OFL) are
+ * Deps (global): opentype.js, @resvg/resvg-js. Archivo Black + Lato (OFL) are
  * fetched at runtime to the OS temp dir — not committed.
  *
  * Run: node .github/assets/gen-banner.mjs
@@ -24,10 +25,10 @@ const __dir = dirname(fileURLToPath(import.meta.url));
 
 const NAME = "JD Highlighter";
 const CLAIM = "The only highlighter that won't dry out.";
-const NAME_FILL = "#242626", CLAIM_FILL = "#5a5d5e";
+const NAME_FILL = "#161616", CLAIM_FILL = "#5a5d5e";
 const W = 1600, H = 500, LH = 380, LW = 380;
 const LX = 150, LY = (H - LH) / 2;     // logo: fixed left
-const textX = 600, claimSize = 40, lineGap = 18;
+const textX = 600, claimSize = 40, lineGap = 22;
 
 async function loadFont(name, url) {
   const p = join(tmpdir(), name);
@@ -38,12 +39,12 @@ async function loadFont(name, url) {
   }
   return opentype.parse(readFileSync(p));
 }
-const font = await loadFont("BreeSerif-Regular.ttf", "https://github.com/google/fonts/raw/main/ofl/breeserif/BreeSerif-Regular.ttf");
+const font = await loadFont("ArchivoBlack-Regular.ttf", "https://github.com/google/fonts/raw/main/ofl/archivoblack/ArchivoBlack-Regular.ttf");
 const claimFont = await loadFont("Lato-Regular.ttf", "https://github.com/google/fonts/raw/main/ofl/lato/Lato-Regular.ttf");
 
 // Shrink the name until it fits the available width to the right of the logo.
 const maxTextW = W - textX - 80;
-let nameSize = 124;
+let nameSize = 120;
 while (font.getAdvanceWidth(NAME, nameSize) > maxTextW && nameSize > 60) nameSize -= 2;
 
 const sc = (s) => s / font.unitsPerEm;
