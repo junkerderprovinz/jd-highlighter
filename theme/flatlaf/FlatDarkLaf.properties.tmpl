@@ -34,7 +34,10 @@ Component.borderWidth         = 0
 Component.borderColor         = #1e1e1e
 Component.disabledBorderColor = #1e1e1e
 Component.focusWidth          = 0
-Component.innerFocusWidth     = 0.5
+Component.innerFocusWidth     = 0
+Component.focusColor          = @@ACCENT@@
+Button.hoverBackground        = @@ACCENT@@
+Button.focusedBackground      = @@ACCENT@@
 Spinner.buttonBackground      = #1e1e1e
 ComboBox.buttonBackground     = #1e1e1e
 Button.borderWidth            = 0
@@ -74,8 +77,8 @@ TabbedPane.hoverColor         = @@ACCENT@@
 TabbedPane.hoverForeground    = @@ACCENT_FG@@
 TabbedPane.tabArc             = 10
 TabbedPane.cardTabArc         = 10
-TabbedPane.tabInsets          = 6,18,6,18
-TabbedPane.tabAreaInsets      = 2,6,2,6
+TabbedPane.tabInsets          = 6,26,6,26
+TabbedPane.tabAreaInsets      = 2,10,2,10
 
 # --- toolbar + menu: accent background on hover / selection ---
 Button.toolbar.hoverBackground    = @@ACCENT@@
@@ -115,5 +118,13 @@ TableHeader.showTrailingVerticalLine = false
 ScrollPane.border                    = 0,0,0,0
 List.border                          = 0,0,0,0
 Tree.border                          = 0,0,0,0
+# scrollbar thumb neutral: JD's content scrollbars use colorforscrollbars* (#393939), but the
+# settings SIDEBAR uses a FlatLaf-painted JScrollBar with no such override and was rendering the
+# thumb in an un-themed bright colour. Pin it to the same neutral grey so nothing off-accent shows.
+ScrollBar.thumb                      = #393939
+ScrollBar.hoverThumbColor            = #525252
+ScrollBar.pressedThumbColor          = #525252
+ScrollBar.track                      = #161616
+ScrollBar.hoverTrackColor            = #161616
 SplitPane.background                 = #161616
 SplitPaneDivider.draggingColor       = #161616
