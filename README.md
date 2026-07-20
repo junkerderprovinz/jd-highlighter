@@ -1,5 +1,5 @@
 <a href="https://jdownloader.org">
-  <img src="https://raw.githubusercontent.com/junkerderprovinz/jd-highlighter/main/.github/assets/banner.svg" alt="JD Highlighter" width="100%">
+  <img src=".github/assets/banner.png" alt="JD Highlighter" width="100%">
 </a>
 
 <p align="center">
