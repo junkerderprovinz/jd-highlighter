@@ -1,6 +1,9 @@
-<a href="https://jdownloader.org">
-  <img src=".github/assets/banner.png" alt="JD Highlighter" width="100%">
-</a>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/banner-dark.png">
+    <img src=".github/assets/banner.png" alt="JD Highlighter" width="100%">
+  </picture>
+</p>
 
 <p align="center">
   <a href="https://github.com/junkerderprovinz/jd-highlighter/actions/workflows/lint.yml"><img src="https://img.shields.io/github/actions/workflow/status/junkerderprovinz/jd-highlighter/lint.yml?branch=main&label=Lint&style=for-the-badge&logo=githubactions&logoColor=white" alt="Lint" height="36"></a>&nbsp;
