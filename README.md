@@ -42,8 +42,8 @@ fills stay neutral so text stays readable at <i>any</i> accent hue. Works on the
 4. [How it works](#4-how-it-works)
 5. [Uninstall](#5-uninstall)
 6. [Credits](#6-credits)
-7. [Support this project](#7-support-this-project)
-8. [License](#8-license)
+7. [License](#7-license)
+8. [Support this project](#8-support-this-project)
 
 <br>
 
@@ -204,22 +204,24 @@ Sibling to [jd-plain-dark](https://github.com/junkerderprovinz/jd-plain-dark). L
 
 <br>
 
-## 7. Support this project
-
-If this made JDownloader a little easier on the eyes, you can
-
-<a href="https://buymeacoffee.com/junkerderprovinz">
-  <img src=".github/assets/button-buy-me-a-coffee.svg" alt="Buy me a coffee" width="200">
-</a>
-
-Issues and suggestions: [GitHub Issues](https://github.com/junkerderprovinz/jd-highlighter/issues).
-
-<br>
-
-## 8. License
+## 7. License
 
 **Copyright (C) 2026 Junker der Provinz.**
 
 JD Highlighter is free software under the **GNU Affero General Public License v3.0** (AGPL-3.0); see [LICENSE](LICENSE). You may run, study, share and modify it. If you distribute it, or run a modified version as a network service, you must release your source under the same AGPL-3.0 terms and keep the existing copyright and attribution notices intact.
 
 **Name and branding are not licensed.** The AGPL covers the source code only. "JD Highlighter", its logo and its branding remain reserved: a fork or derivative must use its own distinct name and branding, and may not present itself as JD Highlighter. This keeps it unambiguous which project is the original.
+
+<br>
+
+## 8. Support this project
+
+If this made JDownloader a little easier on the eyes, you can
+
+<p align="center">
+  <a href="https://buymeacoffee.com/junkerderprovinz">
+    <img src=".github/assets/button-buy-me-a-coffee.svg" alt="Buy me a coffee" width="220">
+  </a>
+</p>
+
+Issues and suggestions: [GitHub Issues](https://github.com/junkerderprovinz/jd-highlighter/issues).
