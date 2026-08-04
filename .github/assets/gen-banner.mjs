@@ -38,7 +38,7 @@ const THEMES = [
   { suffix: "-dark", bg: "#0d1117", name: "#e6edf3", claim: "#9aa4ad", darkGlobe: true  },
 ];
 const W = 1600, H = 500;
-const LH = 300, LW = LH;          // globe on the left (square) — house standard height
+const LH = 470, LW = LH;          // globe on the left (square) — house standard height
 const gap = 70;                   // logo-to-text gap (house standard)
 const claimSize = 44;
 const WM_H = 214;                 // nominal wordmark height in the banner
@@ -117,7 +117,7 @@ const top = H / 2 - blockH / 2;
 const wmX = textX - bb.x * s2;                             // left-anchor the wordmark's ink at textX
 const wmTop = top - bb.y * s2;                             // wordmark visible top -> `top`
 const claimBaseline = top + wmH + NAME_CLAIM_GAP + claimAsc;
-const claimStartX = textX;                                 // claim left-aligned with the wordmark
+const claimStartX = textX + (wmWFit - runWidth(lato, CLAIM, claimSize)) / 2;  // claim centred on the wordmark
 const claimPath = runPath(lato, CLAIM, claimStartX, claimBaseline, claimSize).d;
 
 // Globe: the light card keeps the Carbon-dark body; the dark card lightens it to read on #0d1117.
