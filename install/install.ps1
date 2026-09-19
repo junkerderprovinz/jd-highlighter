@@ -56,7 +56,7 @@ if (-not $JdDir) {
   foreach ($c in $cands) { if ($c -and (Test-Path (Join-Path $c "cfg"))) { $JdDir = $c; break } }
 }
 
-# Interactive fallback - never fail silently.
+# Interactive fallback, so a missing folder never fails silently.
 while (-not $JdDir -or -not (Test-Path (Join-Path $JdDir "cfg"))) {
   Write-Host "Could not auto-detect JDownloader."
   $JdDir = Read-Host "Enter your JDownloader folder (the one that contains 'cfg'), or leave empty to cancel"
@@ -76,7 +76,7 @@ if ($PSVersionTable.PSVersion.Major -ge 6) {
   $d["lookandfeeltheme"] = "FLATLAF_DARK"
   # Also switch off JDownloader's built-in advertisements so the GUI stays clean
   # and the download graph keeps its full height (the "Become premium user" banner
-  # otherwise squeezes it). Ads only - Donate and functional settings untouched.
+  # otherwise squeezes it). Ads only; Donate and functional settings stay untouched.
   $d["bannerenabled"] = $false
   $d["statusbaraddpremiumbuttonvisible"] = $false
   $d["premiumalertspeedcolumnenabled"] = $false
@@ -92,7 +92,7 @@ if ($PSVersionTable.PSVersion.Major -ge 6) {
   Write-Host "      Settings > GUI > Look & Feel > FLATLAF_DARK once."
 }
 
-# --- JD Highlighter: render the accented FlatLaf control theme + wire the theme agent ---
+# Render the accented FlatLaf control theme and wire the theme agent.
 if (-not $Accent) { if ($env:JD_HL_ACCENT) { $Accent = $env:JD_HL_ACCENT } else { $Accent = "#ffee00" } }
 if (-not $Accent.StartsWith('#')) { $Accent = "#$Accent" }
 

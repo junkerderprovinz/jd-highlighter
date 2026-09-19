@@ -1,16 +1,15 @@
-# JD Highlighter — FlatLaf control theme (loaded via registerCustomDefaultsSource).
+# JD Highlighter: FlatLaf control theme (loaded via registerCustomDefaultsSource).
 # @@ACCENT@@ / @@ACCENT_FG@@ are substituted at apply time (container: jdownloader-theme.sh;
 # desktop: the theme agent / installer). The accent is the one knob; large fills stay neutral.
 
-# --- base ---
-# Three-layer elevation: base #161616 < field #1e1e1e < surface (cards/dialogs) #242424.
-# Fields are only SLIGHTLY lighter than the base (subtle raise, not the too-light #262626).
+# Base. Three-layer elevation: base #161616 < field #1e1e1e < surface (cards/dialogs) #242424.
+# Fields are only slightly lighter than the base (subtle raise, not the too-light #262626).
 @background          = #161616
 @foreground          = #f4f4f4
 @componentBackground = #1e1e1e
 @disabledForeground  = #6f6f6f
 
-# --- accent (the one knob) ---
+# Accent, the one knob.
 @accentColor                    = @@ACCENT@@
 ToggleButton.selectedBackground = @@ACCENT@@
 Button.default.foreground       = @@ACCENT_FG@@
@@ -21,15 +20,14 @@ ProgressBar.selectionForeground = @@ACCENT_FG@@
 ProgressBar.background          = #262626
 ProgressBar.selectionBackground = #f4f4f4
 
-# --- selection stays neutral (readable at any accent) ---
+# Selection stays neutral, readable at any accent.
 @selectionBackground = #525252
 @selectionForeground = #f4f4f4
 
-# --- borderless ---
-# Input fields (text/combo/spinner) always draw a 1px FlatBorder line; borderWidth=0
-# removes it entirely (padding/arc kept) so fields read as raised #1e1e1e pills,
-# differentiated by fill not by a rahmen. borderColor is matched to the fill too as
-# belt-and-suspenders (any line on a #1e1e1e fill would show as a hairline).
+# Borderless. Input fields (text/combo/spinner) always draw a 1px FlatBorder line;
+# borderWidth=0 removes it entirely (padding/arc kept) so fields read as raised #1e1e1e
+# pills, differentiated by fill, not by a border. borderColor is matched to the fill too
+# as belt-and-suspenders (any line on a #1e1e1e fill would show as a hairline).
 Component.borderWidth         = 0
 Component.borderColor         = #1e1e1e
 Component.disabledBorderColor = #1e1e1e
@@ -48,27 +46,27 @@ MenuBar.borderColor           = #161616
 ToolBar.borderColor           = #161616
 PopupMenu.borderColor         = #161616
 
-# --- rounded ---
+# Rounded.
 Button.arc        = 6
 Component.arc     = 6
 TextComponent.arc = 6
 CheckBox.arc      = 4
 
-# --- roomier controls: taller fields + more padded dropdown rows (space, not lines) ---
+# Roomier controls: taller fields and more padded dropdown rows (space, not lines).
 # Combo/dropdown popups are JLists, so List.cellMargins is what makes each dropdown
-# ROW taller; Component.minimumHeight + ComboBox.padding pad the collapsed field.
+# row taller; Component.minimumHeight + ComboBox.padding pad the collapsed field.
 Component.minimumHeight = 30
 ComboBox.padding        = 5,8,5,8
 List.cellMargins        = 7,10,7,10
 List.selectionInsets    = 1,2,1,2
 List.selectionArc       = 6
 
-# --- pop-up dialogs lift off the #161616 chrome by SHADE, no lines (JOptionPane paths;
-#     custom AppWork dialogs are recoloured by the agent) ---
+# Pop-up dialogs lift off the #161616 chrome by shade, no lines (JOptionPane paths;
+# custom AppWork dialogs are recoloured by the agent).
 OptionPane.background = #242424
 RootPane.background   = #242424
 
-# --- main tabs: the selected tab is an accent BUTTON (pill), not an underline ---
+# Main tabs: the selected tab is an accent button (pill), not an underline.
 # Bigger insets = more breathing room around each tab label and more space between tabs.
 TabbedPane.selectedBackground = @@ACCENT@@
 TabbedPane.selectedForeground = @@ACCENT_FG@@
@@ -80,7 +78,7 @@ TabbedPane.cardTabArc         = 10
 TabbedPane.tabInsets          = 6,26,6,26
 TabbedPane.tabAreaInsets      = 2,10,2,10
 
-# --- toolbar + menu: accent background on hover / selection ---
+# Toolbar and menu: accent background on hover / selection.
 Button.toolbar.hoverBackground    = @@ACCENT@@
 Button.toolbar.pressedBackground  = @@ACCENT@@
 Button.toolbar.selectedBackground = @@ACCENT@@
@@ -92,7 +90,7 @@ Menu.selectionBackground          = @@ACCENT@@
 Menu.selectionForeground          = @@ACCENT_FG@@
 MenuItem.selectionBackground      = @@ACCENT@@
 MenuItem.selectionForeground      = @@ACCENT_FG@@
-# roomier dropdown-menu rows (the menus were too cramped/"gedrungen")
+# Roomier dropdown-menu rows; the default ones are cramped.
 MenuItem.margin                    = 6,16,6,16
 Menu.margin                        = 6,16,6,16
 CheckBoxMenuItem.margin            = 6,16,6,16
@@ -100,11 +98,10 @@ RadioButtonMenuItem.margin         = 6,16,6,16
 MenuItem.selectionInsets           = 1,2,1,2
 MenuItem.selectionArc              = 6
 
-# --- no lines anywhere: differentiate by shading, not borders ---
+# No lines anywhere: differentiate by shading, not borders.
 # The header keeps a subtly lighter fill (#1e1e1e) so it reads as a header by
-# SHADE, not by lines. The column separators + underline MUST equal that header
-# fill: a #161616 separator on a #1e1e1e header renders as a darker hairline
-# (that was the "lines are still there" bug). Match them to the fill and they vanish.
+# shade, not by lines. The column separators + underline have to equal that header
+# fill: a #161616 separator on a #1e1e1e header renders as a darker hairline.
 Table.showHorizontalLines            = false
 Table.showVerticalLines              = false
 Table.showTrailingVerticalLine       = false
@@ -118,8 +115,8 @@ TableHeader.showTrailingVerticalLine = false
 ScrollPane.border                    = 0,0,0,0
 List.border                          = 0,0,0,0
 Tree.border                          = 0,0,0,0
-# scrollbar thumb neutral: JD's content scrollbars use colorforscrollbars* (#393939), but the
-# settings SIDEBAR uses a FlatLaf-painted JScrollBar with no such override and was rendering the
+# Scrollbar thumb neutral: JD's content scrollbars use colorforscrollbars* (#393939), but the
+# settings sidebar uses a FlatLaf-painted JScrollBar with no such override, which renders the
 # thumb in an un-themed bright colour. Pin it to the same neutral grey so nothing off-accent shows.
 ScrollBar.thumb                      = #393939
 ScrollBar.hoverThumbColor            = #525252

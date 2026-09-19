@@ -14,7 +14,7 @@ cleanup() { rm -rf "$TMP" "$TMP2" "$TMP4"; [ "$CREATED_JAR" = 1 ] && rm -f "$JAR
 trap cleanup EXIT
 if [ ! -f "$JAR" ]; then printf 'PK\003\004 placeholder jar (real one built in CI)\n' > "$JAR"; CREATED_JAR=1; fi
 
-# --- Test 1: explicit path argument ---
+# Test 1: explicit path argument.
 mkdir -p "$TMP/cfg"
 printf '{"foo":"bar"}' > "$TMP/cfg/org.jdownloader.settings.GraphicalUserInterfaceSettings.json"
 sh "$ROOT/install/install.sh" "$TMP" </dev/null
@@ -27,13 +27,13 @@ grep -q '"bannerenabled": false' "$TMP/cfg/org.jdownloader.settings.GraphicalUse
   || { echo "FAIL(1): built-in ads not disabled (bannerenabled)"; exit 1; }
 echo "PASS(1) explicit path"
 
-# --- Test 2: auto-detection (no argument), via a $HOME candidate ---
+# Test 2: auto-detection (no argument), via a $HOME candidate.
 mkdir -p "$TMP2/JDownloader/cfg"
 HOME="$TMP2" sh "$ROOT/install/install.sh" </dev/null
 test -f "$TMP2/JDownloader/cfg/laf/FlatDarkLaf.json" || { echo "FAIL(2): auto-detect didn't copy"; exit 1; }
 echo "PASS(2) auto-detect"
 
-# --- Test 3: Windows installer regression guards (the original bug) ---
+# Test 3: the Windows installer knows the plain "JDownloader" folder and asks when detection fails.
 PS1="$ROOT/install/install.ps1"
 grep -qF '"C:\Program Files\JDownloader"' "$PS1" \
   || { echo "FAIL(3): install.ps1 missing 'C:\\Program Files\\JDownloader' (no 2.0 suffix) candidate"; exit 1; }
@@ -41,7 +41,7 @@ grep -q 'Read-Host' "$PS1" \
   || { echo "FAIL(3): install.ps1 missing interactive fallback (Read-Host)"; exit 1; }
 echo "PASS(3) windows installer guards"
 
-# --- Test 4: theme agent wiring (.vmoptions), accent render, idempotency, uninstall ---
+# Test 4: theme agent wiring (.vmoptions), accent render, idempotency, uninstall.
 mkdir -p "$TMP4/cfg"
 HLDIR="$TMP4/.jd-highlighter/flatlaf-defaults"
 PROPS="$HLDIR/FlatDarkLaf.properties"
@@ -61,7 +61,7 @@ N=$(grep -c 'javaagent.*jd-highlighter-agent\.jar' "$VMO")
 [ "$N" = "1" ] || { echo "FAIL(4): expected 1 -javaagent line, got $N"; exit 1; }
 echo "PASS(4) install wires agent + renders accent"
 
-# run install AGAIN -> still exactly one line (idempotent)
+# run install again -> still exactly one line (idempotent)
 sh "$ROOT/install/install.sh" "$TMP4" "#ffee00" </dev/null
 N=$(grep -c 'javaagent.*jd-highlighter-agent\.jar' "$VMO")
 [ "$N" = "1" ] || { echo "FAIL(4b): re-install duplicated the -javaagent line ($N)"; exit 1; }
@@ -73,7 +73,7 @@ if grep -q 'jd-highlighter-agent\.jar' "$VMO"; then echo "FAIL(4c): agent line n
 if [ -d "$TMP4/.jd-highlighter" ]; then echo "FAIL(4c): .jd-highlighter dir not removed on uninstall"; exit 1; fi
 echo "PASS(4c) uninstall removes line + theme dir"
 
-# --- Test 5: Windows agent-wiring + uninstall static guards ---
+# Test 5: Windows agent wiring and uninstall, checked statically.
 grep -q 'javaagent' "$PS1" || { echo "FAIL(5): install.ps1 missing -javaagent wiring"; exit 1; }
 grep -q 'jd-highlighter-agent' "$PS1" || { echo "FAIL(5): install.ps1 missing agent jar reference"; exit 1; }
 test -f "$ROOT/install/uninstall.ps1" || { echo "FAIL(5): uninstall.ps1 missing"; exit 1; }

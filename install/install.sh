@@ -20,7 +20,7 @@ if [ -z "$JD_DIR" ]; then
   done
 fi
 
-# Interactive fallback when a terminal is attached - never fail silently.
+# Interactive fallback when a terminal is attached, so a missing folder never fails silently.
 if { [ -z "$JD_DIR" ] || [ ! -d "$JD_DIR/cfg" ]; } && [ -t 0 ]; then
   printf "Could not auto-detect JDownloader.\nEnter your JDownloader folder (contains 'cfg'), or leave empty to cancel: "
   read -r JD_DIR
@@ -50,7 +50,7 @@ if os.path.exists(p):
 d["lookandfeeltheme"] = "FLATLAF_DARK"
 # Also switch off JDownloader's built-in advertisements so the GUI stays clean and
 # the download graph keeps its full height (the "Become premium user" banner
-# otherwise squeezes it). Ads only - Donate and functional settings untouched.
+# otherwise squeezes it). Ads only; Donate and functional settings stay untouched.
 for k in ("bannerenabled", "statusbaraddpremiumbuttonvisible",
           "premiumalertspeedcolumnenabled", "premiumalerttaskcolumnenabled",
           "premiumalertetacolumnenabled", "premiumdisabledwarningflashenabled",
@@ -64,7 +64,7 @@ else
   echo "      Settings > GUI > Look & Feel > FLATLAF_DARK once."
 fi
 
-# --- JD Highlighter: render the accented FlatLaf control theme + wire the theme agent ---
+# Render the accented FlatLaf control theme and wire the theme agent.
 . "$HERE/lib/accent.sh"
 ACCENT="${2:-${JD_HL_ACCENT:-#ffee00}}"
 case "$ACCENT" in \#*) : ;; *) ACCENT="#$ACCENT" ;; esac

@@ -1,18 +1,18 @@
 /**
  * Generates the JD Highlighter README banners (theme-adaptive pair) in the JDownloader
  * main-repo house style:
- *   banner.svg / .png       : light 1600x500 - recoloured globe on the LEFT, then the
+ *   banner.svg / .png       : light 1600x500, recoloured globe on the left, then the
  *                             "JD HIGHLIGHTER" wordmark + a cheeky claim.
  *   banner-dark.svg / .png  : same layout on GitHub-dark #0d1117, light text + lightened globe.
  * The README serves the pair via <picture> (prefers-color-scheme).
  *
- * Wordmark: the JDownloader treatment applied to the theme name - the signature giant Myriad
- * Pro SEMIBOLD "J" (with the crossbar across its top), reused VERBATIM from the JDOWNLOADER
- * mark, then the rest of the name in Myriad Pro BLACK caps. So the leading "JD" reads exactly
- * like the "JD" in JDOWNLOADER. Rendered to VECTOR PATHS (opentype.js); letters are FLAT
+ * Wordmark: the JDownloader treatment applied to the theme name: the signature giant Myriad
+ * Pro Semibold "J" (with the crossbar across its top), reused verbatim from the JDOWNLOADER
+ * mark, then the rest of the name in Myriad Pro Black caps. So the leading "JD" reads exactly
+ * like the "JD" in JDOWNLOADER. Rendered to vector paths (opentype.js); letters are flat
  * (#161616 light / light on dark). The claim uses Lato (OFL).
  *
- * The Myriad Pro OTFs live at .github/assets/_fonts/ (gitignored - NEVER committed; only the
+ * The Myriad Pro OTFs live at .github/assets/_fonts/ (gitignored and never committed; only the
  * glyph outlines land in the SVG). Nominative use echoing the product's own mark.
  *
  * Deps: `npm i -g @resvg/resvg-js opentype.js`. Run: node .github/assets/gen-banner.mjs
@@ -30,22 +30,21 @@ const opentype = require(`${gRoot}/opentype.js`);
 const { Resvg } = require(`${gRoot}/@resvg/resvg-js`);
 const __dir = dirname(fileURLToPath(import.meta.url));
 
-// ---- content -----------------------------------------------------------------
-const NAME = "JD HIGHLIGHTER";                                  // rendered ALL CAPS, JD-wordmark style
+const NAME = "JD HIGHLIGHTER";                                  // rendered in caps, JD-wordmark style
 const CLAIM = "The only highlighter that won't dry out.";
 const THEMES = [
   { suffix: "",      bg: "#ffffff", name: "#1f2328", claim: "#5a5d5e", darkGlobe: false },
   { suffix: "-dark", bg: "#0d1117", name: "#e6edf3", claim: "#9aa4ad", darkGlobe: true  },
 ];
 const W = 1600, H = 500;
-const LH = 470, LW = LH;          // globe on the left (square) — house standard height
+const LH = 470, LW = LH;          // globe on the left (square), house standard height
 const gap = 70;                   // logo-to-text gap (house standard)
 const claimSize = 44;
 const WM_H = 214;                 // nominal wordmark height in the banner
 const MAX_GROUP = W - 150;
 
 // Source wordmark geometry (JDownloader "Element 1.svg"; source box height 326.1). The J +
-// crossbar + the caps baseline are reused VERBATIM so the leading "JD" matches JDOWNLOADER.
+// crossbar + the caps baseline are reused verbatim so the leading "JD" matches JDOWNLOADER.
 const SRC_H = 326.1;
 const CROSSBAR = { x: 27.78, y: 48.9, w: 70.62, h: 24.14 };
 const J_RUN  = { text: "J", x: 0, y: 251.1, size: 300 };        // giant Semibold J
@@ -62,7 +61,7 @@ if (!existsSync(latoFile)) {
 const lato = opentype.parse(readFileSync(latoFile).buffer);
 
 // Render a text run to a path at (x, baseline) with optional letter-spacing (em). Returns
-// { d, endX }. Reads glyph.path.commands (read-only) so a REPEATED letter doesn't come back NaN
+// { d, endX }. Reads glyph.path.commands (read-only) so a repeated letter doesn't come back NaN
 // (opentype's Glyph.getPath() mutates a reused glyph object).
 function runPath(font, text, x, baseline, size, lsEm = 0) {
   const s = size / font.unitsPerEm, ls = lsEm * size, n = (v) => v.toFixed(2);
@@ -87,7 +86,7 @@ function runWidth(font, text, size) {
   return w;
 }
 
-// Build the wordmark in the SOURCE coordinate system: giant J + crossbar + Black-caps remainder.
+// Build the wordmark in the source coordinate system: giant J + crossbar + Black-caps remainder.
 const jRes = runPath(semi, NAME[0], J_RUN.x, J_RUN.y, J_RUN.size);
 const restRes = runPath(black, NAME.slice(1), REST.x, REST.y, REST.size, REST.ls);
 const wordmarkPath = jRes.d + restRes.d;
