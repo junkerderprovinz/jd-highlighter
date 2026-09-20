@@ -1,7 +1,7 @@
 # theme/
 
 `cfg/laf/FlatDarkLaf.json` is the IBM-Carbon palette for JD's own content areas
-(download list, link grabber, settings table, panels, tooltips, scrollbars) —
+(download list, link grabber, settings table, panels, tooltips, scrollbars):
 the keys JDownloader reads itself (`colorfor*`), `#161616` base, selection kept
 neutral (`#ff525252`) so text stays readable at any accent. The interactive
 controls, borders and accent are themed separately by
