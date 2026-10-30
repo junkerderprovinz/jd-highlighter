@@ -52,19 +52,21 @@ fills stay neutral so text stays readable at <i>any</i> accent hue. Works on the
 ## 1. What it does
 
 JDownloader 2 ships no proper dark mode, and even a dark Look & Feel leaves boxed inputs,
-hard separators and grey controls. **JD Highlighter** is a complete visual redesign in a
-neutral IBM Carbon (`#161616`) dark, built around four "clean / edel" moves:
+hard separators, grey controls and a toolbar full of colourful icons. **JD Highlighter** is a
+complete visual redesign in a neutral IBM Carbon (`#161616`) dark:
 
-- **Borderless.** Every component, border and separator colour equals the surface behind it, so
-  the lines simply disappear: no boxes, no hairline grid.
-- **Fields defined by fill, not frames.** Text fields, editable combos and spinners sit on a fill
-  one step lighter than the window (`#1e1e1e`), reading as soft raised blocks instead of framed inputs.
-- **Subtly rounded corners.** Buttons and fields ~6px, checkboxes ~4px. Modern without being toy-like.
+- **Borderless.** Borders and separators take the colour of the surface behind them, so the
+  lines disappear: no boxes, no hairline grid. Areas stand apart by shade instead.
+- **Cards, not frames.** The download list, the link grabber and the settings sections sit on
+  a `#242424` card with rounded corners; fields are soft filled blocks without a frame.
+- **One corner radius.** Buttons, fields, tabs, menus, cards and dialogs all round at 8px.
+- **Clean line icons.** The chrome icons (toolbar, tabs, sidebar, section headers, status
+  glyphs) become one consistent set of [Tabler](https://tabler.io/icons) line icons.
 - **A single, free accent.** One colour you choose (any hex, default electric yellow `#ffee00`)
-  lights up **checkmarks, radios, toggle-on, focus rings, links, the download progress bar and
-  primary buttons**. **Large text-bearing fills stay neutral**: the selected download row keeps a
-  readable grey `#525252`, never a full accent wash, so the look stays edel at any hue. The
-  accent-button text is **auto-contrasted** (dark text on a light accent, light text on a dark one).
+  lights up the toolbar toggles, the selected tab, menu and row hover, checkmarks, focus and
+  the download progress bar. **Large text-bearing fills stay neutral**: the selected download
+  row keeps a readable grey `#525252`, so the look holds at any hue. Text on the accent is
+  **auto-contrasted** (dark on a light accent, light on a dark one).
 
 It works on **Windows, macOS and Linux** (via a small installer) and inside the
 **JDownloader Docker container** (via `JD_THEME=jd-highlighter`). It is a sibling to
@@ -99,35 +101,36 @@ value you choose; it is baked in at apply time (set the value, then restart; the
 1. Download `jd-highlighter-vX.Y.Z.zip` from the [latest release](https://github.com/junkerderprovinz/jd-highlighter/releases/latest) and unzip it.
 2. Run the installer for your OS:
    - **Windows:** double-click **`install/install.bat`** (recommended). It keeps the window open
-     and, if it can't find JDownloader automatically, **asks you for the folder**. (Right-click
-     `install/install.ps1` → *Run with PowerShell* also works.)
+     and, if it can't find JDownloader automatically, **asks you for the folder**. Right-click
+     `install/install.ps1` → *Run with PowerShell* works as well.
    - **Linux / macOS:** `sh install/install.sh "/path/to/JDownloader"`
      (the folder that contains `cfg`). Without an argument it auto-detects and prompts if it can't.
-3. **Restart JDownloader.**
+3. **Restart JDownloader.** If you have never used one of JD's FlatLaf designs before, JD
+   downloads it on this start and restarts once more by itself. The theme appears as soon as
+   FlatLaf is running.
 
-The installer copies the Carbon theme JSON into JD's `cfg/laf/`, selects the `FLATLAF_DARK`
-Look & Feel, renders the accented control theme (`FlatDarkLaf.properties`) into
-`<JD>/.jd-highlighter/`, drops in the tiny theme agent (`jd-highlighter-agent.jar`), and wires it
-with **one idempotent** `-javaagent:` line in JDownloader's install4j `.vmoptions`
-(`JDownloader2.vmoptions`, or `Contents/vmoptions.txt` inside the macOS bundle). Running it again
-never adds a second line.
+The installer writes the Carbon colours into JD's `cfg/laf/`, selects the `FLATLAF_DARK`
+Look & Feel and switches off JD's built-in ads. Into `<JD>/.jd-highlighter/` it renders the
+accented control theme (`FlatDarkLaf.properties`) and copies the theme agent
+(`jd-highlighter-agent.jar`) with its icons. Two lines in JDownloader's install4j `.vmoptions`
+(`JDownloader2.vmoptions`, or `Contents/vmoptions.txt` inside the macOS bundle) load the agent;
+running the installer again replaces them instead of adding more.
 
 **Choose / change the accent (desktop).** Pass any hex to the installer, then restart JDownloader:
 
 ```sh
-# Linux / macOS — second argument is the accent
+# Linux / macOS: the second argument is the accent
 sh install/install.sh "/path/to/JDownloader" "#4589ff"
 ```
 
 ```powershell
-# Windows — the -Accent parameter (forwarded through install.bat too)
+# Windows: the -Accent parameter (install.bat passes it on)
 install\install.bat -Accent "#4589ff"
 ```
 
-Re-running the installer re-renders the control theme and leaves the single agent line in place.
-If JDownloader is installed in a read-only folder, the installer writes the agent line to
+If JDownloader is installed in a read-only folder, the installer writes the two lines to
 `<JD>/.jd-highlighter/jd-highlighter.vmoptions` and prints the one line to add
-(`-include-options …`), with `JAVA_TOOL_OPTIONS` documented as the last-resort fallback.
+(`-include-options …`), with `JAVA_TOOL_OPTIONS` as the last-resort fallback.
 
 ### Container (Docker / Unraid)
 
@@ -150,29 +153,30 @@ writes the accent into the control theme and computes the auto-contrast button t
 
 ## 4. How it works
 
-JDownloader paints in **two separate paths**, so JD Highlighter ships **two files**:
+JDownloader paints in **two separate paths**, and some of its look is hard-coded, so JD
+Highlighter works on three levels:
 
 | Surface | Mechanism | File |
 |---|---|---|
-| Download list, link grabber, settings table, panels, tooltips, scrollbars, icon set | JD's own `colorfor*` config | `theme/cfg/laf/FlatDarkLaf.json` |
-| Buttons, checkboxes, radios, toggles, **text fields (fill, no border)**, combos, **borders**, **accent**, focus, rounded corners | FlatLaf custom-defaults `.properties` | `theme/flatlaf/FlatDarkLaf.properties.tmpl` |
+| Download list, link grabber, settings table, panels, tooltips, scrollbars | JD's own `colorfor*` config | `theme/cfg/laf/FlatDarkLaf.json` |
+| Buttons, checkboxes, toggles, fields, combos, tabs, menus, borders, accent, corner radius | FlatLaf custom-defaults `.properties` | `theme/flatlaf/FlatDarkLaf.properties.tmpl` |
+| Icons, cards, menu badges, dialogs, progress rings, everything JD hard-codes | a Java agent | `agent/` |
 
-The **JSON** is basically the Carbon palette JDownloader reads itself (selection kept neutral at
-`#525252`). The **`.properties`** is where JD Highlighter's character lives: borderless colours,
-the fill-based fields, the rounded arcs and the `@accentColor` that cascades through the controls.
-The accent (and its auto-contrast foreground) are substituted into the template at apply time.
+The **JSON** is the Carbon palette JDownloader reads itself. The **`.properties`** holds the
+borderless colours, the fill-based fields, the rounded corners and the `@accentColor` that
+cascades through the controls. The installer fills the accent and its auto-contrast colour into
+both at apply time.
 
-FlatLaf only loads that `.properties` if a running JVM calls
-`FlatLaf.registerCustomDefaultsSource(<dir>)`:
+The **agent** (`jd-highlighter-agent.jar`, compiled for JD's Java 21 runtime) registers the
+`.properties` with FlatLaf and then reworks what no theme key reaches: it swaps the chrome icons
+for the Tabler set, lays the lists onto rounded cards, turns menus and dialogs borderless and
+replaces JD's coloured progress globes with a plain accent ring. JDownloader's own jars stay
+untouched. The agent is the same one the
+[JDownloader-for-Unraid container](https://github.com/junkerderprovinz/jdownloader) runs;
+`agent/UPSTREAM` names the container commit it comes from.
 
-- **Desktop:** a tiny theme agent (`jd-highlighter-agent.jar`, compiled `--release 21` to match JD's
-  Java-21 runtime) does exactly that from `premain`. The installer wires it via the install4j
-  `.vmoptions`, so it survives JDownloader's self-relaunch. No patched `flatlaf.jar`.
-- **Container:** the image already registers that defaults directory, so `jdownloader-theme.sh`
-  simply writes the rendered `.properties` there when `JD_THEME=jd-highlighter`.
-
-Either way the L&F stays `FLATLAF_DARK`. JD Highlighter is a FlatLaf-Dark theme, only the colours
-and control values differ.
+The L&F stays `FLATLAF_DARK` throughout: JD Highlighter is a FlatLaf Dark theme with its own
+colours, control values and icons.
 
 <br>
 
@@ -185,8 +189,8 @@ Run the uninstaller for your OS (it auto-detects JDownloader, or takes the folde
 - **Windows:** right-click `install/uninstall.ps1` → *Run with PowerShell*.
 - **Linux / macOS:** `sh install/uninstall.sh "/path/to/JDownloader"`
 
-It removes exactly the JD Highlighter `-javaagent:` line (and any `-include-options` redirect) from
-the `.vmoptions` and deletes the `<JD>/.jd-highlighter/` directory. The Look & Feel is left as
+It removes exactly the two JD Highlighter lines (and any `-include-options` redirect) from the
+`.vmoptions` and deletes the `<JD>/.jd-highlighter/` directory. The Look & Feel is left as
 `FLATLAF_DARK` and the theme JSON stays in `cfg/laf/`; to fully revert, pick another theme under
 **Settings → GUI → Look & Feel** and restart JDownloader.
 
@@ -199,10 +203,11 @@ Set `JD_THEME` back to `Dark` (or `Light`) and restart the container.
 ## 6. Credits
 
 The two-path technique, overriding JDownloader's native `colorfor*` config for the content areas
-and loading a FlatLaf custom-defaults `.properties` for the controls, is derived from the dark
-theme built into the [JDownloader-for-Unraid container](https://github.com/junkerderprovinz/jdownloader).
-The colours here are our own (IBM Carbon monochrome) and the accent handling is original.
-Sibling to [jd-plain-dark](https://github.com/junkerderprovinz/jd-plain-dark). Licensed MIT.
+and loading a FlatLaf custom-defaults `.properties` for the controls, comes from the dark theme
+built into the [JDownloader-for-Unraid container](https://github.com/junkerderprovinz/jdownloader).
+The chrome icons are [Tabler Icons](https://tabler.io/icons) (MIT, see
+`theme/jd-tabler/LICENSE.tabler`). The agent bundles [ASM](https://asm.ow2.io/) (BSD-3-Clause, see `agent/LICENSE.asm`).
+Sibling to [jd-plain-dark](https://github.com/junkerderprovinz/jd-plain-dark).
 
 <br>
 

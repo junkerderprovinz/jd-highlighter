@@ -28,7 +28,7 @@ jobs:
           stage="jd-highlighter-${tag}"
           mkdir -p "$stage/agent"
           cp -R theme install lib "$stage"/
-          cp agent/jd-highlighter-agent.jar "$stage/agent"/
+          cp agent/jd-highlighter-agent.jar agent/LICENSE.asm "$stage/agent"/
           cp README.md LICENSE "$stage"/
           zip -r "jd-highlighter-${tag}.zip" "$stage"
           echo "Packaged jd-highlighter-${tag}.zip:"
