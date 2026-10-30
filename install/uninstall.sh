@@ -31,7 +31,7 @@ fi
 VMO="$JD_DIR/JDownloader2.vmoptions"
 [ -d "$JD_DIR/Contents" ] && VMO="$JD_DIR/Contents/vmoptions.txt"
 if [ -f "$VMO" ]; then
-  sed -e '/jd-highlighter-agent\.jar/d' -e '/jd\.highlighter\.home/d' -e '/jd-highlighter\.vmoptions/d' "$VMO" > "$VMO.tmp" && mv "$VMO.tmp" "$VMO"
+  sed -e '/jd-highlighter-agent\.jar/d' -e '/jd\.highlighter\.home/d' -e '/jd\.highlighter\.variant/d' -e '/jd-highlighter\.vmoptions/d' "$VMO" > "$VMO.tmp" && mv "$VMO.tmp" "$VMO"
   echo "Removed the JD Highlighter agent lines from $VMO"
 fi
 

@@ -1,11 +1,18 @@
 #!/usr/bin/env sh
 # JD Highlighter installer (Linux/macOS)
-# Usage: install.sh [/path/to/JDownloader] [accent-hex]   (the folder that contains 'cfg')
+# Usage: install.sh [/path/to/JDownloader] [accent-hex] [dark|light]   (the folder that contains 'cfg')
 #   accent-hex: any #rrggbb (default #ffee00). Also settable via JD_HL_ACCENT.
+#   dark|light: JD Highlighter Dark (default) or Light. Also settable via JD_HL_VARIANT.
 set -eu
 
 HERE="$(cd "$(dirname "$0")/.." && pwd)"
-SRC="$HERE/theme/cfg/laf/FlatDarkLaf.json"
+VARIANT="${3:-${JD_HL_VARIANT:-dark}}"
+case "$VARIANT" in
+  dark)  LAF=FlatDarkLaf;  LAFTHEME=FLATLAF_DARK ;;
+  light) LAF=FlatLightLaf; LAFTHEME=FLATLAF_LIGHT ;;
+  *) echo "ERROR: the variant is dark or light, not $VARIANT." >&2; exit 1 ;;
+esac
+SRC="$HERE/theme/cfg/laf/$LAF.json"
 [ -f "$SRC" ] || { echo "ERROR: $SRC not found. Run this from the unzipped release folder." >&2; exit 1; }
 
 JD_DIR="${1:-}"
@@ -41,21 +48,21 @@ case "$ACCENT" in
 esac
 
 mkdir -p "$JD_DIR/cfg/laf"
-render_properties "$SRC" "$ACCENT" "$JD_DIR/cfg/laf/FlatDarkLaf.json"
-echo "Wrote FlatDarkLaf.json (accent=$ACCENT) -> $JD_DIR/cfg/laf/"
+render_properties "$SRC" "$ACCENT" "$JD_DIR/cfg/laf/$LAF.json"
+echo "Wrote $LAF.json (accent=$ACCENT) -> $JD_DIR/cfg/laf/"
 
 GUI="$JD_DIR/cfg/org.jdownloader.settings.GraphicalUserInterfaceSettings.json"
 if command -v python3 >/dev/null 2>&1; then
-  python3 - "$GUI" <<'PY'
+  python3 - "$GUI" "$LAFTHEME" <<'PY'
 import json, os, sys
-p = sys.argv[1]
+p, laf = sys.argv[1], sys.argv[2]
 d = {}
 if os.path.exists(p):
     try:
         d = json.load(open(p))
     except Exception:
         d = {}
-d["lookandfeeltheme"] = "FLATLAF_DARK"
+d["lookandfeeltheme"] = laf
 # JD's own advertising: the premium banner also squeezes the download graph.
 for k in ("bannerenabled", "statusbaraddpremiumbuttonvisible",
           "premiumalertspeedcolumnenabled", "premiumalerttaskcolumnenabled",
@@ -64,18 +71,18 @@ for k in ("bannerenabled", "statusbaraddpremiumbuttonvisible",
     d[k] = False
 json.dump(d, open(p, "w"), indent=2)
 PY
-  echo "Set lookandfeeltheme=FLATLAF_DARK and turned off JD's ads"
+  echo "Set lookandfeeltheme=$LAFTHEME and turned off JD's ads"
 else
   echo "NOTE: python3 not found. Open JDownloader and pick"
-  echo "      Settings > GUI > Look & Feel > FLATLAF_DARK once."
+  echo "      Settings > GUI > Look & Feel > $LAFTHEME once."
 fi
 
 HLROOT="$JD_DIR/.jd-highlighter"
 HLDIR="$HLROOT/flatlaf-defaults"
 mkdir -p "$HLDIR"
-render_properties "$HERE/theme/flatlaf/FlatDarkLaf.properties.tmpl" "$ACCENT" "$HLDIR/FlatDarkLaf.properties"
+render_properties "$HERE/theme/flatlaf/$LAF.properties.tmpl" "$ACCENT" "$HLDIR/$LAF.properties"
 printf '%s\n' "$ACCENT" > "$HLROOT/accent"
-echo "Rendered FlatDarkLaf.properties (accent=$ACCENT) -> $HLDIR/"
+echo "Rendered $LAF.properties (accent=$ACCENT) -> $HLDIR/"
 
 rm -rf "$HLROOT/icons" "$HLROOT/jd-tabler"
 cp -R "$HERE/theme/icons" "$HLROOT/icons"
@@ -94,9 +101,10 @@ fi
 
 # install4j reads JDownloader2.vmoptions next to the launcher on Linux and
 # Contents/vmoptions.txt inside the app bundle on macOS. Old JD Highlighter lines are
-# dropped first, so running the installer again leaves exactly one pair. Java refuses to
+# dropped first, so running the installer again leaves exactly one set. Java refuses to
 # start with a -javaagent whose jar is missing, so that line needs the jar.
 HOMELINE="-Djd.highlighter.home=$HLROOT"
+VARIANTLINE="-Djd.highlighter.variant=$VARIANT"
 AGENTLINE=""
 if [ -f "$AGENT" ]; then
   AGENTLINE="-javaagent:$AGENT"
@@ -109,18 +117,18 @@ if [ -d "$JD_DIR/Contents" ]; then VMDIR="$JD_DIR/Contents"; VMO="$JD_DIR/Conten
 
 if [ -w "$VMDIR" ] || { [ -f "$VMO" ] && [ -w "$VMO" ]; }; then
   touch "$VMO"
-  sed -e '/jd-highlighter-agent\.jar/d' -e '/jd\.highlighter\.home/d' -e '/jd-highlighter\.vmoptions/d' "$VMO" > "$VMO.tmp"
-  printf '%s\n' "$HOMELINE" ${AGENTLINE:+"$AGENTLINE"} >> "$VMO.tmp"
+  sed -e '/jd-highlighter-agent\.jar/d' -e '/jd\.highlighter\.home/d' -e '/jd\.highlighter\.variant/d' -e '/jd-highlighter\.vmoptions/d' "$VMO" > "$VMO.tmp"
+  printf '%s\n' "$HOMELINE" "$VARIANTLINE" ${AGENTLINE:+"$AGENTLINE"} >> "$VMO.tmp"
   mv "$VMO.tmp" "$VMO"
   echo "Wired the theme agent -> $VMO"
 else
   USERVMO="$HLROOT/jd-highlighter.vmoptions"
-  printf '%s\n' "$HOMELINE" ${AGENTLINE:+"$AGENTLINE"} > "$USERVMO"
+  printf '%s\n' "$HOMELINE" "$VARIANTLINE" ${AGENTLINE:+"$AGENTLINE"} > "$USERVMO"
   echo "NOTE: $VMDIR is not writable, so $VMO stays as it is." >&2
   echo "      Wrote $USERVMO. Add this line to your JDownloader .vmoptions:" >&2
   echo "        -include-options $USERVMO" >&2
   echo "      Or, as a last resort that survives every JD relaunch:" >&2
-  echo "        export JAVA_TOOL_OPTIONS=\"$HOMELINE $AGENTLINE\"" >&2
+  echo "        export JAVA_TOOL_OPTIONS=\"$HOMELINE $VARIANTLINE $AGENTLINE\"" >&2
 fi
 
 echo "Done. Restart JDownloader."

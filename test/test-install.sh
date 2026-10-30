@@ -6,11 +6,12 @@ TMP="$(mktemp -d)"
 TMP2="$(mktemp -d)"
 TMP4="$(mktemp -d)"
 TMP6="$(mktemp -d)"
+TMP7="$(mktemp -d)"
 
 # CI builds the real jar; a placeholder exercises the copy, and cleanup removes only ours.
 JAR="$ROOT/agent/jd-highlighter-agent.jar"
 CREATED_JAR=0
-cleanup() { rm -rf "$TMP" "$TMP2" "$TMP4" "$TMP6"; [ "$CREATED_JAR" = 1 ] && rm -f "$JAR"; return 0; }
+cleanup() { rm -rf "$TMP" "$TMP2" "$TMP4" "$TMP6" "$TMP7"; [ "$CREATED_JAR" = 1 ] && rm -f "$JAR"; return 0; }
 trap cleanup EXIT
 if [ ! -f "$JAR" ]; then printf 'PK\003\004 placeholder jar (real one built in CI)\n' > "$JAR"; CREATED_JAR=1; fi
 
@@ -89,7 +90,7 @@ echo "PASS(4c) uninstall removes lines + theme dir"
 grep -q 'javaagent' "$PS1" || { echo "FAIL(5): install.ps1 missing -javaagent wiring"; exit 1; }
 grep -q 'jd\.highlighter\.home' "$PS1" || { echo "FAIL(5): install.ps1 missing the home property"; exit 1; }
 test -f "$ROOT/install/uninstall.ps1" || { echo "FAIL(5): uninstall.ps1 missing"; exit 1; }
-grep -qF 'jd\.highlighter\.home' "$ROOT/install/uninstall.ps1" \
+grep -qF 'jd\.highlighter\.(home|variant)' "$ROOT/install/uninstall.ps1" \
   || { echo "FAIL(5): uninstall.ps1 does not strip the home line"; exit 1; }
 echo "PASS(5) windows agent-wiring + uninstall guards"
 
@@ -102,5 +103,22 @@ if grep -q 'javaagent' "$VMO6"; then echo "FAIL(6): -javaagent wired without a j
 grep -q 'jd\.highlighter\.home' "$VMO6" || { echo "FAIL(6): home line missing"; exit 1; }
 [ "$(cat "$TMP6/jd/.jd-highlighter/accent")" = "#ffee00" ] || { echo "FAIL(6): broken accent kept"; exit 1; }
 echo "PASS(6) no jar, no agent line; broken accent falls back"
+
+# Test 7: the light variant writes the FlatLaf Light files, and switching back to dark leaves one variant line.
+mkdir -p "$TMP7/cfg"
+sh "$ROOT/install/install.sh" "$TMP7" "#ffee00" light </dev/null
+test -f "$TMP7/cfg/laf/FlatLightLaf.json" || { echo "FAIL(7): FlatLightLaf.json not written"; exit 1; }
+grep -q '"#ffffffff"' "$TMP7/cfg/laf/FlatLightLaf.json" || { echo "FAIL(7): white card missing from the light JSON"; exit 1; }
+PROPS7="$TMP7/.jd-highlighter/flatlaf-defaults/FlatLightLaf.properties"
+grep -Eq '^@background +=  ?#f4f4f4$' "$PROPS7" || { echo "FAIL(7): light base missing in .properties"; exit 1; }
+if grep -q '@@' "$PROPS7"; then echo "FAIL(7): leftover @@ token in the light .properties"; exit 1; fi
+grep -q 'FLATLAF_LIGHT' "$TMP7/cfg/org.jdownloader.settings.GraphicalUserInterfaceSettings.json" \
+  || { echo "FAIL(7): lookandfeeltheme not FLATLAF_LIGHT"; exit 1; }
+grep -qx -- '-Djd.highlighter.variant=light' "$TMP7/JDownloader2.vmoptions" || { echo "FAIL(7): variant line missing"; exit 1; }
+sh "$ROOT/install/install.sh" "$TMP7" "#ffee00" dark </dev/null
+[ "$(grep -c 'jd\.highlighter\.variant' "$TMP7/JDownloader2.vmoptions")" = 1 ] || { echo "FAIL(7): variant line duplicated"; exit 1; }
+grep -qx -- '-Djd.highlighter.variant=dark' "$TMP7/JDownloader2.vmoptions" || { echo "FAIL(7): switch back to dark not wired"; exit 1; }
+if sh "$ROOT/install/install.sh" "$TMP7" "#ffee00" sepia </dev/null 2>/dev/null; then echo "FAIL(7): unknown variant accepted"; exit 1; fi
+echo "PASS(7) light variant and switching back"
 
 echo "ALL PASS"

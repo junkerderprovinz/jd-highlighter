@@ -58,6 +58,8 @@ jobs:
           curl -fsSL "https://codeload.github.com/junkerderprovinz/jdownloader/tar.gz/$ref" | tar xz -C upstream --strip-components=1
           diff -r upstream/agent/src agent/src
           diff -q upstream/rootfs/opt/JDownloader/flatlaf-defaults/highlighter.properties.tmpl theme/flatlaf/FlatDarkLaf.properties.tmpl
+          diff -q upstream/rootfs/opt/JDownloader/flatlaf-defaults/highlighter-light.properties.tmpl theme/flatlaf/FlatLightLaf.properties.tmpl
+          diff -r upstream/rootfs/opt/jd-tabler/png theme/jd-tabler/png
 
   installer-pwsh:
     runs-on: ubuntu-latest
@@ -112,5 +114,15 @@ jobs:
           if ($LASTEXITCODE) { throw "uninstall.ps1 exited with $LASTEXITCODE" }
           if (Select-String -Path $vmo -Pattern 'jd-highlighter-agent\.jar' -Quiet) { throw "agent line not removed on uninstall" }
           if (Test-Path (Join-Path $jd ".jd-highlighter")) { throw ".jd-highlighter dir not removed on uninstall" }
+
+          # 6) The light variant writes the FlatLaf Light files and its own variant line.
+          & ./install/install.ps1 -JdDir $jd -Accent "#ffee00" -Variant light
+          if ($LASTEXITCODE) { throw "light install.ps1 exited with $LASTEXITCODE" }
+          $null = Get-Content (Join-Path $jd "cfg/laf/FlatLightLaf.json") -Raw | ConvertFrom-Json
+          if ((Get-Content $gui -Raw | ConvertFrom-Json).lookandfeeltheme -ne 'FLATLAF_LIGHT') { throw "light install did not set FLATLAF_LIGHT" }
+          $lp = Get-Content (Join-Path $jd ".jd-highlighter/flatlaf-defaults/FlatLightLaf.properties") -Raw
+          if ($lp -notmatch '@background += #f4f4f4') { throw "light base missing in FlatLightLaf.properties" }
+          $v = @(Get-Content $vmo | Where-Object { $_ -match 'jd\.highlighter\.variant' })
+          if ($v.Count -ne 1 -or $v[0] -ne '-Djd.highlighter.variant=light') { throw "variant line wrong: $v" }
 
           Write-Host "PASS installer behavioral test (pwsh $($PSVersionTable.PSVersion))"

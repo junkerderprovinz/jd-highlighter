@@ -36,7 +36,7 @@ while (-not $JdDir -or -not (Test-Path (Join-Path $JdDir "cfg"))) {
 $vmo = Join-Path $JdDir "JDownloader2.vmoptions"
 if (Test-Path $vmo) {
   $kept = Get-Content $vmo | Where-Object {
-    $_ -notmatch 'jd-highlighter-agent\.jar' -and $_ -notmatch 'jd\.highlighter\.home' -and $_ -notmatch 'jd-highlighter\.vmoptions'
+    $_ -notmatch 'jd-highlighter-agent\.jar' -and $_ -notmatch 'jd\.highlighter\.(home|variant)' -and $_ -notmatch 'jd-highlighter\.vmoptions'
   }
   Write-TextFileNoBom $vmo (($kept -join "`n") + "`n")
   Write-Host "Removed the JD Highlighter agent lines from $vmo"

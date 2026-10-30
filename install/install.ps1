@@ -1,7 +1,7 @@
 # JD Highlighter installer (Windows)
 # Recommended: double-click install.bat. Or right-click this file > Run with PowerShell.
-# Manual:      powershell -ExecutionPolicy Bypass -File install.ps1 [-JdDir "C:\path\to\JDownloader"] [-Accent "#ffee00"]
-param([string]$JdDir = "", [string]$Accent = "")
+# Manual:      powershell -ExecutionPolicy Bypass -File install.ps1 [-JdDir "C:\path\to\JDownloader"] [-Accent "#ffee00"] [-Variant dark|light]
+param([string]$JdDir = "", [string]$Accent = "", [ValidateSet("dark", "light")][string]$Variant = "dark")
 $ErrorActionPreference = "Stop"
 
 function Hold { try { if ($Host.UI.RawUI) { Read-Host "`nPress Enter to close" | Out-Null } } catch {} }
@@ -36,7 +36,10 @@ function Render-Properties([string]$tmpl, [string]$accent, [string]$out) {
 }
 
 $here = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
-$src  = Join-Path $here "theme\cfg\laf\FlatDarkLaf.json"
+# JD Highlighter Dark runs on FlatLaf Dark, JD Highlighter Light on FlatLaf Light; JD names its
+# colour file and the control defaults after that look and feel.
+$laf  = if ($Variant -eq "light") { "FlatLightLaf" } else { "FlatDarkLaf" }
+$src  = Join-Path $here "theme\cfg\laf\$laf.json"
 if (-not (Test-Path $src)) {
   Write-Host "ERROR: $src not found. Run this from the unzipped release folder."
   Hold; exit 1
@@ -75,8 +78,8 @@ if ($Accent -notmatch '^#[0-9a-fA-F]{6}$') {
 
 $lafDir = Join-Path $JdDir "cfg\laf"
 New-Item -ItemType Directory -Force -Path $lafDir | Out-Null
-Render-Properties $src $Accent (Join-Path $lafDir "FlatDarkLaf.json")
-Write-Host "Wrote FlatDarkLaf.json (accent=$Accent) -> $lafDir"
+Render-Properties $src $Accent (Join-Path $lafDir "$laf.json")
+Write-Host "Wrote $laf.json (accent=$Accent) -> $lafDir"
 
 $gui = Join-Path $JdDir "cfg\org.jdownloader.settings.GraphicalUserInterfaceSettings.json"
 # A PSCustomObject rather than -AsHashtable, so Windows PowerShell 5.1 (the default on
@@ -84,7 +87,8 @@ $gui = Join-Path $JdDir "cfg\org.jdownloader.settings.GraphicalUserInterfaceSett
 $d = $null
 if (Test-Path $gui) { try { $d = Get-Content $gui -Raw | ConvertFrom-Json } catch { $d = $null } }
 if ($null -eq $d) { $d = New-Object PSObject }
-$settings = [ordered]@{ lookandfeeltheme = "FLATLAF_DARK" }
+$lafTheme = if ($Variant -eq "light") { "FLATLAF_LIGHT" } else { "FLATLAF_DARK" }
+$settings = [ordered]@{ lookandfeeltheme = $lafTheme }
 # JD's own advertising: the premium banner also squeezes the download graph.
 foreach ($k in "bannerenabled", "statusbaraddpremiumbuttonvisible",
                "premiumalertspeedcolumnenabled", "premiumalerttaskcolumnenabled",
@@ -94,14 +98,14 @@ foreach ($k in "bannerenabled", "statusbaraddpremiumbuttonvisible",
 }
 foreach ($k in $settings.Keys) { $d | Add-Member -NotePropertyName $k -NotePropertyValue $settings[$k] -Force }
 Write-TextFileNoBom $gui ($d | ConvertTo-Json -Depth 10)
-Write-Host "Set lookandfeeltheme=FLATLAF_DARK and turned off JD's ads"
+Write-Host "Set lookandfeeltheme=$lafTheme and turned off JD's ads"
 
 $hlRoot = Join-Path $JdDir ".jd-highlighter"
 $hlDir  = Join-Path $hlRoot "flatlaf-defaults"
 New-Item -ItemType Directory -Force -Path $hlDir | Out-Null
-Render-Properties (Join-Path $here "theme\flatlaf\FlatDarkLaf.properties.tmpl") $Accent (Join-Path $hlDir "FlatDarkLaf.properties")
+Render-Properties (Join-Path $here "theme\flatlaf\$laf.properties.tmpl") $Accent (Join-Path $hlDir "$laf.properties")
 Write-TextFileNoBom (Join-Path $hlRoot "accent") ("{0}`n" -f $Accent)
-Write-Host "Rendered FlatDarkLaf.properties (accent=$Accent) -> $hlDir"
+Write-Host "Rendered $laf.properties (accent=$Accent) -> $hlDir"
 
 foreach ($set in "icons", "jd-tabler") {
   $dst = Join-Path $hlRoot $set
@@ -124,19 +128,20 @@ if (Test-Path $agentSrc) {
 }
 
 # install4j reads JDownloader2.vmoptions next to the launcher. Old JD Highlighter lines
-# are dropped first, so running the installer again leaves exactly one pair. Java refuses
+# are dropped first, so running the installer again leaves exactly one set. Java refuses
 # to start with a -javaagent whose jar is missing, so that line needs the jar.
-$homeLine  = "-Djd.highlighter.home=$hlRoot"
+$homeLine    = "-Djd.highlighter.home=$hlRoot"
+$variantLine = "-Djd.highlighter.variant=$Variant"
 $agentLine = $null
 if (Test-Path $agent) { $agentLine = "-javaagent:$agent" }
 else { Write-Host "NOTE: there is no jd-highlighter-agent.jar in this folder, so only the colours apply." }
-$wire = @($homeLine, $agentLine) | Where-Object { $_ }
+$wire = @($homeLine, $variantLine, $agentLine) | Where-Object { $_ }
 $vmo = Join-Path $JdDir "JDownloader2.vmoptions"
 try {
   $kept = @()
   if (Test-Path $vmo) {
     $kept = @(Get-Content $vmo | Where-Object {
-      $_ -notmatch 'jd-highlighter-agent\.jar' -and $_ -notmatch 'jd\.highlighter\.home' -and $_ -notmatch 'jd-highlighter\.vmoptions'
+      $_ -notmatch 'jd-highlighter-agent\.jar' -and $_ -notmatch 'jd\.highlighter\.(home|variant)' -and $_ -notmatch 'jd-highlighter\.vmoptions'
     })
   }
   $kept += $wire
