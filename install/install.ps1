@@ -75,26 +75,22 @@ Render-Properties $src $Accent (Join-Path $lafDir "FlatDarkLaf.json")
 Write-Host "Wrote FlatDarkLaf.json (accent=$Accent) -> $lafDir"
 
 $gui = Join-Path $JdDir "cfg\org.jdownloader.settings.GraphicalUserInterfaceSettings.json"
-if ($PSVersionTable.PSVersion.Major -ge 6) {
-  $d = @{}
-  if (Test-Path $gui) { try { $d = Get-Content $gui -Raw | ConvertFrom-Json -AsHashtable } catch { $d = @{} } }
-  if ($null -eq $d) { $d = @{} }
-  $d["lookandfeeltheme"] = "FLATLAF_DARK"
-  # JD's own advertising: the premium banner also squeezes the download graph.
-  $d["bannerenabled"] = $false
-  $d["statusbaraddpremiumbuttonvisible"] = $false
-  $d["premiumalertspeedcolumnenabled"] = $false
-  $d["premiumalerttaskcolumnenabled"] = $false
-  $d["premiumalertetacolumnenabled"] = $false
-  $d["premiumdisabledwarningflashenabled"] = $false
-  $d["specialdealsenabled"] = $false
-  $d["specialdealoboomdialogvisibleonstartup"] = $false
-  ($d | ConvertTo-Json -Depth 10) | Out-File -FilePath $gui -Encoding utf8
-  Write-Host "Set lookandfeeltheme=FLATLAF_DARK and turned off JD's ads"
-} else {
-  Write-Host "NOTE: Windows PowerShell 5.1. Open JDownloader and pick"
-  Write-Host "      Settings > GUI > Look & Feel > FLATLAF_DARK once."
+# A PSCustomObject rather than -AsHashtable, so Windows PowerShell 5.1 (the default on
+# Windows) gets the same result as pwsh.
+$d = $null
+if (Test-Path $gui) { try { $d = Get-Content $gui -Raw | ConvertFrom-Json } catch { $d = $null } }
+if ($null -eq $d) { $d = New-Object PSObject }
+$settings = [ordered]@{ lookandfeeltheme = "FLATLAF_DARK" }
+# JD's own advertising: the premium banner also squeezes the download graph.
+foreach ($k in "bannerenabled", "statusbaraddpremiumbuttonvisible",
+               "premiumalertspeedcolumnenabled", "premiumalerttaskcolumnenabled",
+               "premiumalertetacolumnenabled", "premiumdisabledwarningflashenabled",
+               "specialdealsenabled", "specialdealoboomdialogvisibleonstartup") {
+  $settings[$k] = $false
 }
+foreach ($k in $settings.Keys) { $d | Add-Member -NotePropertyName $k -NotePropertyValue $settings[$k] -Force }
+Write-TextFileNoBom $gui ($d | ConvertTo-Json -Depth 10)
+Write-Host "Set lookandfeeltheme=FLATLAF_DARK and turned off JD's ads"
 
 $hlRoot = Join-Path $JdDir ".jd-highlighter"
 $hlDir  = Join-Path $hlRoot "flatlaf-defaults"
