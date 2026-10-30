@@ -78,16 +78,34 @@ accent-free "JD Plain in dark" instead? Use that one; JD Highlighter is the bord
 ## 2. Screenshots
 
 <p align="center">
-  <img src="docs/screenshots/preview.png" alt="JD Highlighter: borderless download list, controls and settings with the default electric-yellow accent" width="92%">
+  <img src="docs/screenshots/preview.png" alt="JD Highlighter: the download list on a rounded card, menus as pills and the toolbar toggles in the default yellow accent" width="90%">
+  <br>
+  <em>The download list on its card, with the default electric-yellow accent <code>#ffee00</code>.</em>
 </p>
-
-<p align="center"><sub>Borderless Carbon <code>#161616</code> with the default electric-yellow accent <code>#ffee00</code>.</sub></p>
 
 <p align="center">
-  <img src="docs/screenshots/preview-accent.png" alt="JD Highlighter with an alternate blue accent: the same theme, one colour changed" width="92%">
+  <img src="docs/screenshots/linkgrabber.png" alt="JD Highlighter: the LinkGrabber with its views column, overview and bottom bar as cards" width="90%">
+  <br>
+  <em>The LinkGrabber: list, views column, overview and bottom bar each sit on their own card.</em>
 </p>
 
-<p align="center"><sub>Same theme, one knob turned: an alternate accent (<code>#4589ff</code>). Large fills stay neutral.</sub></p>
+<p align="center">
+  <img src="docs/screenshots/settings.png" alt="JD Highlighter: the settings with full-height tiles, section cards and borderless fields" width="90%">
+  <br>
+  <em>Settings with full-height tiles, section cards and borderless fields.</em>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/menu.png" alt="JD Highlighter: an open menu with mono Tabler glyphs, spinners and check boxes" width="90%">
+  <br>
+  <em>Menus with mono Tabler glyphs and the accent on hover.</em>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/preview-accent.png" alt="JD Highlighter with a blue accent: the same theme with one colour changed" width="90%">
+  <br>
+  <em>The same theme with one colour changed: a blue accent <code>#4589ff</code>. Large surfaces stay neutral.</em>
+</p>
 
 <br>
 
