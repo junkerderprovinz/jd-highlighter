@@ -35,6 +35,13 @@ if [ -f "$VMO" ]; then
   echo "Removed the JD Highlighter agent lines from $VMO"
 fi
 
+# The agent keeps light copies of a few JD icons in JD's own iconset, where a light theme
+# cannot show them. Only files that still match the shipped copies go.
+IMG="$JD_DIR/themes/flat/org/jdownloader/images"
+for n in tree_plus.svg tree_minus.svg exttable/lockColumn.svg exttable/widthLocked.svg; do
+  if [ -f "$IMG/$n" ] && cmp -s "$IMG/$n" "$JD_DIR/.jd-highlighter/icons/$n"; then rm -f "$IMG/$n"; fi
+done
+
 # The theme dir holds the rendered .properties, the agent jar, the icons and the accent.
 if [ -d "$JD_DIR/.jd-highlighter" ]; then
   rm -rf "$JD_DIR/.jd-highlighter"

@@ -68,6 +68,10 @@ while (-not $JdDir -or -not (Test-Path (Join-Path $JdDir "cfg"))) {
 
 if (-not $Accent) { if ($env:JD_HL_ACCENT) { $Accent = $env:JD_HL_ACCENT } else { $Accent = "#ffee00" } }
 if (-not $Accent.StartsWith('#')) { $Accent = "#$Accent" }
+if ($Accent -notmatch '^#[0-9a-fA-F]{6}$') {
+  Write-Host "Accent $Accent is not a #rrggbb colour, using #ffee00"
+  $Accent = "#ffee00"
+}
 
 $lafDir = Join-Path $JdDir "cfg\laf"
 New-Item -ItemType Directory -Force -Path $lafDir | Out-Null
@@ -110,17 +114,23 @@ Write-Host "Copied the icon sets -> $hlRoot"
 $agentSrc = Join-Path $here "agent\jd-highlighter-agent.jar"
 $agent    = Join-Path $hlRoot "jd-highlighter-agent.jar"
 if (Test-Path $agentSrc) {
-  Copy-Item $agentSrc $agent -Force
+  # Windows locks the jar while JDownloader runs.
+  try { Copy-Item $agentSrc $agent -Force }
+  catch {
+    Write-Host "Could not replace $agent. Close JDownloader and run the installer again."
+    Hold; exit 1
+  }
   Write-Host "Installed jd-highlighter-agent.jar -> $hlRoot"
-} else {
-  Write-Host "NOTE: $agentSrc not found (the release jar is built in CI)."
-  Write-Host "      The .vmoptions lines still point at $agent for when the jar is there."
 }
 
 # install4j reads JDownloader2.vmoptions next to the launcher. Old JD Highlighter lines
-# are dropped first, so running the installer again leaves exactly one pair.
+# are dropped first, so running the installer again leaves exactly one pair. Java refuses
+# to start with a -javaagent whose jar is missing, so that line needs the jar.
 $homeLine  = "-Djd.highlighter.home=$hlRoot"
-$agentLine = "-javaagent:$agent"
+$agentLine = $null
+if (Test-Path $agent) { $agentLine = "-javaagent:$agent" }
+else { Write-Host "NOTE: there is no jd-highlighter-agent.jar in this folder, so only the colours apply." }
+$wire = @($homeLine, $agentLine) | Where-Object { $_ }
 $vmo = Join-Path $JdDir "JDownloader2.vmoptions"
 try {
   $kept = @()
@@ -129,17 +139,17 @@ try {
       $_ -notmatch 'jd-highlighter-agent\.jar' -and $_ -notmatch 'jd\.highlighter\.home' -and $_ -notmatch 'jd-highlighter\.vmoptions'
     })
   }
-  $kept += $homeLine, $agentLine
+  $kept += $wire
   Write-TextFileNoBom $vmo (($kept -join "`n") + "`n")
   Write-Host "Wired the theme agent -> $vmo"
 } catch {
   $userVmo = Join-Path $hlRoot "jd-highlighter.vmoptions"
-  Write-TextFileNoBom $userVmo "$homeLine`n$agentLine`n"
+  Write-TextFileNoBom $userVmo (($wire -join "`n") + "`n")
   Write-Host "NOTE: could not edit $vmo ($($_.Exception.Message))."
   Write-Host "      Wrote $userVmo. Add this line to your JDownloader .vmoptions:"
   Write-Host "        -include-options $userVmo"
   Write-Host "      Or, as a last resort that survives every JD relaunch:"
-  Write-Host "        setx JAVA_TOOL_OPTIONS `"$homeLine $agentLine`""
+  Write-Host "        setx JAVA_TOOL_OPTIONS `"$($wire -join ' ')`""
 }
 
 Write-Host "Done. Restart JDownloader."

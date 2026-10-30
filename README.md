@@ -167,7 +167,7 @@ borderless colours, the fill-based fields, the rounded corners and the `@accentC
 cascades through the controls. The installer fills the accent and its auto-contrast colour into
 both at apply time.
 
-The **agent** (`jd-highlighter-agent.jar`, compiled for JD's Java 21 runtime) registers the
+The **agent** (`jd-highlighter-agent.jar`, compiled for Java 8, so it loads on every Java that JDownloader ships with) registers the
 `.properties` with FlatLaf and then reworks what no theme key reaches: it swaps the chrome icons
 for the Tabler set, lays the lists onto rounded cards, turns menus and dialogs borderless and
 replaces JD's coloured progress globes with a plain accent ring. JDownloader's own jars stay

@@ -5,11 +5,12 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 TMP="$(mktemp -d)"
 TMP2="$(mktemp -d)"
 TMP4="$(mktemp -d)"
+TMP6="$(mktemp -d)"
 
 # CI builds the real jar; a placeholder exercises the copy, and cleanup removes only ours.
 JAR="$ROOT/agent/jd-highlighter-agent.jar"
 CREATED_JAR=0
-cleanup() { rm -rf "$TMP" "$TMP2" "$TMP4"; [ "$CREATED_JAR" = 1 ] && rm -f "$JAR"; return 0; }
+cleanup() { rm -rf "$TMP" "$TMP2" "$TMP4" "$TMP6"; [ "$CREATED_JAR" = 1 ] && rm -f "$JAR"; return 0; }
 trap cleanup EXIT
 if [ ! -f "$JAR" ]; then printf 'PK\003\004 placeholder jar (real one built in CI)\n' > "$JAR"; CREATED_JAR=1; fi
 
@@ -72,7 +73,13 @@ N=$(grep -c 'jd-highlighter' "$VMO")
 [ "$N" = "2" ] || { echo "FAIL(4b): re-install left $N JD Highlighter lines, expected 2"; exit 1; }
 echo "PASS(4b) re-install is idempotent"
 
+IMG="$TMP4/themes/flat/org/jdownloader/images"
+mkdir -p "$IMG/exttable"
+cp "$ROOT/theme/icons/tree_plus.svg" "$IMG/tree_plus.svg"
+printf '<svg/>' > "$IMG/exttable/lockColumn.svg"
 sh "$ROOT/install/uninstall.sh" "$TMP4" </dev/null
+if [ -f "$IMG/tree_plus.svg" ]; then echo "FAIL(4c): light icon left in JD's iconset"; exit 1; fi
+test -f "$IMG/exttable/lockColumn.svg" || { echo "FAIL(4c): uninstall removed an icon it did not ship"; exit 1; }
 if grep -q 'jd-highlighter\|jd\.highlighter' "$VMO"; then echo "FAIL(4c): agent lines not removed on uninstall"; exit 1; fi
 grep -qx -- '-Xmx1g' "$VMO" || { echo "FAIL(4c): unrelated vmoptions line lost on uninstall"; exit 1; }
 if [ -d "$HLROOT" ]; then echo "FAIL(4c): .jd-highlighter dir not removed on uninstall"; exit 1; fi
@@ -85,5 +92,15 @@ test -f "$ROOT/install/uninstall.ps1" || { echo "FAIL(5): uninstall.ps1 missing"
 grep -qF 'jd\.highlighter\.home' "$ROOT/install/uninstall.ps1" \
   || { echo "FAIL(5): uninstall.ps1 does not strip the home line"; exit 1; }
 echo "PASS(5) windows agent-wiring + uninstall guards"
+
+# Test 6: a folder without the jar wires no -javaagent, and a broken accent falls back to yellow.
+mkdir -p "$TMP6/pkg" "$TMP6/jd/cfg"
+cp -R "$ROOT/install" "$ROOT/lib" "$ROOT/theme" "$TMP6/pkg/"
+sh "$TMP6/pkg/install/install.sh" "$TMP6/jd" "#nothex" </dev/null 2>/dev/null
+VMO6="$TMP6/jd/JDownloader2.vmoptions"
+if grep -q 'javaagent' "$VMO6"; then echo "FAIL(6): -javaagent wired without a jar"; exit 1; fi
+grep -q 'jd\.highlighter\.home' "$VMO6" || { echo "FAIL(6): home line missing"; exit 1; }
+[ "$(cat "$TMP6/jd/.jd-highlighter/accent")" = "#ffee00" ] || { echo "FAIL(6): broken accent kept"; exit 1; }
+echo "PASS(6) no jar, no agent line; broken accent falls back"
 
 echo "ALL PASS"

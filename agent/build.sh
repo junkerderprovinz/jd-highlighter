@@ -1,7 +1,8 @@
 #!/bin/sh
-# Builds agent/jd-highlighter-agent.jar. JDownloader runs on Java 21, so the classes
-# target 21; a newer class version crash-loops the GUI. ASM is checked against its
-# SHA-256 and unpacked into the jar, which keeps the -javaagent self-contained.
+# Builds agent/jd-highlighter-agent.jar. Desktop installs of JDownloader bring their own
+# Java, some still 8, and a -javaagent the JVM cannot load stops JD from starting, so the
+# classes target Java 8. ASM is checked against its SHA-256 and unpacked into the jar,
+# which keeps the -javaagent self-contained.
 set -eu
 cd "$(dirname "$0")"
 
@@ -13,11 +14,11 @@ mkdir -p build/classes
 curl -fsSL "$ASM_URL" -o build/asm.jar
 echo "$ASM_SHA  build/asm.jar" | sha256sum -c -
 
-javac --release 21 -nowarn -cp build/asm.jar -d build/classes \
+javac --release 8 -nowarn -cp build/asm.jar -d build/classes \
   src/io/github/junkerderprovinz/DialogConfirmAgent.java
-javap -v -classpath build/classes io.github.junkerderprovinz.DialogConfirmAgent | grep -q 'major version: 65'
+javap -v -classpath build/classes io.github.junkerderprovinz.DialogConfirmAgent | grep -q 'major version: 52'
 
 (cd build/classes && jar xf ../asm.jar org/objectweb/asm)
 jar cfm jd-highlighter-agent.jar manifest.mf -C build/classes .
 rm -rf build
-echo "Built agent/jd-highlighter-agent.jar (Java 21 classes)"
+echo "Built agent/jd-highlighter-agent.jar (Java 8 classes)"

@@ -35,6 +35,10 @@ fi
 . "$HERE/lib/accent.sh"
 ACCENT="${2:-${JD_HL_ACCENT:-#ffee00}}"
 case "$ACCENT" in \#*) : ;; *) ACCENT="#$ACCENT" ;; esac
+case "$ACCENT" in
+  \#[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]) : ;;
+  *) echo "Accent $ACCENT is not a #rrggbb colour, using #ffee00" >&2; ACCENT="#ffee00" ;;
+esac
 
 mkdir -p "$JD_DIR/cfg/laf"
 render_properties "$SRC" "$ACCENT" "$JD_DIR/cfg/laf/FlatDarkLaf.json"
@@ -82,18 +86,23 @@ echo "Copied the icon sets -> $HLROOT/"
 AGENT_SRC="$HERE/agent/jd-highlighter-agent.jar"
 AGENT="$HLROOT/jd-highlighter-agent.jar"
 if [ -f "$AGENT_SRC" ]; then
-  cp "$AGENT_SRC" "$AGENT"
+  # A running JD keeps the old jar open, so the new one is moved in instead of written over it.
+  cp "$AGENT_SRC" "$AGENT.new"
+  mv -f "$AGENT.new" "$AGENT"
   echo "Installed jd-highlighter-agent.jar -> $HLROOT/"
-else
-  echo "NOTE: $AGENT_SRC not found (the release jar is built in CI)."
-  echo "      The .vmoptions lines still point at $AGENT for when the jar is there."
 fi
 
 # install4j reads JDownloader2.vmoptions next to the launcher on Linux and
 # Contents/vmoptions.txt inside the app bundle on macOS. Old JD Highlighter lines are
-# dropped first, so running the installer again leaves exactly one pair.
+# dropped first, so running the installer again leaves exactly one pair. Java refuses to
+# start with a -javaagent whose jar is missing, so that line needs the jar.
 HOMELINE="-Djd.highlighter.home=$HLROOT"
-AGENTLINE="-javaagent:$AGENT"
+AGENTLINE=""
+if [ -f "$AGENT" ]; then
+  AGENTLINE="-javaagent:$AGENT"
+else
+  echo "NOTE: there is no jd-highlighter-agent.jar in this folder, so only the colours apply." >&2
+fi
 VMDIR="$JD_DIR"
 VMO="$JD_DIR/JDownloader2.vmoptions"
 if [ -d "$JD_DIR/Contents" ]; then VMDIR="$JD_DIR/Contents"; VMO="$JD_DIR/Contents/vmoptions.txt"; fi
@@ -101,12 +110,12 @@ if [ -d "$JD_DIR/Contents" ]; then VMDIR="$JD_DIR/Contents"; VMO="$JD_DIR/Conten
 if [ -w "$VMDIR" ] || { [ -f "$VMO" ] && [ -w "$VMO" ]; }; then
   touch "$VMO"
   sed -e '/jd-highlighter-agent\.jar/d' -e '/jd\.highlighter\.home/d' -e '/jd-highlighter\.vmoptions/d' "$VMO" > "$VMO.tmp"
-  printf '%s\n%s\n' "$HOMELINE" "$AGENTLINE" >> "$VMO.tmp"
+  printf '%s\n' "$HOMELINE" ${AGENTLINE:+"$AGENTLINE"} >> "$VMO.tmp"
   mv "$VMO.tmp" "$VMO"
   echo "Wired the theme agent -> $VMO"
 else
   USERVMO="$HLROOT/jd-highlighter.vmoptions"
-  printf '%s\n%s\n' "$HOMELINE" "$AGENTLINE" > "$USERVMO"
+  printf '%s\n' "$HOMELINE" ${AGENTLINE:+"$AGENTLINE"} > "$USERVMO"
   echo "NOTE: $VMDIR is not writable, so $VMO stays as it is." >&2
   echo "      Wrote $USERVMO. Add this line to your JDownloader .vmoptions:" >&2
   echo "        -include-options $USERVMO" >&2
