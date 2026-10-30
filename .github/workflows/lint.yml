@@ -48,15 +48,16 @@ jobs:
           distribution: temurin
           java-version: '25'
 
-      - name: Compile the theme agent (--release 21) + assert class major version 65
+      - name: Build the theme agent and check its class version
+        run: sh agent/build.sh
+
+      - name: Agent matches the container's copy
         run: |
-          mkdir -p build/agent
-          javac --release 21 -d build/agent \
-            agent/src/io/github/junkerderprovinz/HighlighterThemeAgent.java
-          # JD runs on Java 21; a class-69 (Java 25) agent crash-loops the GUI. Lock major version 65.
-          javap -v -classpath build/agent io.github.junkerderprovinz.HighlighterThemeAgent \
-            | grep 'major version: 65'
-          echo "OK: agent compiles at class major version 65 (Java 21 target)"
+          ref=$(cat agent/UPSTREAM)
+          curl -fsSL "https://raw.githubusercontent.com/junkerderprovinz/jdownloader/$ref/agent/src/io/github/junkerderprovinz/DialogConfirmAgent.java" -o upstream.java
+          curl -fsSL "https://raw.githubusercontent.com/junkerderprovinz/jdownloader/$ref/rootfs/opt/JDownloader/flatlaf-defaults/highlighter.properties.tmpl" -o upstream.tmpl
+          diff -q upstream.java agent/src/io/github/junkerderprovinz/DialogConfirmAgent.java
+          diff -q upstream.tmpl theme/flatlaf/FlatDarkLaf.properties.tmpl
 
   installer-pwsh:
     runs-on: ubuntu-latest
@@ -88,7 +89,7 @@ jobs:
           # 3) Accented .properties rendered (both tokens substituted, none left over).
           $props = Get-Content (Join-Path $jd ".jd-highlighter/flatlaf-defaults/FlatDarkLaf.properties") -Raw
           if (-not $props.Contains('= #ffee00')) { throw "accent not substituted in .properties" }
-          if (-not $props.Contains('Button.default.foreground       = #161616')) { throw "accent-fg not substituted (yellow -> dark)" }
+          if ($props -notmatch 'TabbedPane.selectedForeground = #161616') { throw "accent-fg not substituted (yellow -> dark)" }
           if ($props.Contains('@@')) { throw "leftover @@ token in .properties" }
 
           # 4) Exactly one -javaagent line, idempotent across a second install.
@@ -96,6 +97,8 @@ jobs:
           if (-not (Test-Path $vmo)) { throw "JDownloader2.vmoptions not created" }
           $n = (Get-Content $vmo | Where-Object { $_ -match 'javaagent.*jd-highlighter-agent\.jar' }).Count
           if ($n -ne 1) { throw "expected 1 -javaagent line, got $n" }
+          if (-not (Select-String -Path $vmo -Pattern '^-Djd\.highlighter\.home=' -Quiet)) { throw "jd.highlighter.home line missing" }
+          if (-not (Test-Path (Join-Path $jd ".jd-highlighter/jd-tabler/mapping.json"))) { throw "Tabler set not copied" }
 
           & ./install/install.ps1 -JdDir $jd -Accent "#ffee00"
           if ($LASTEXITCODE) { throw "second install.ps1 exited with $LASTEXITCODE" }

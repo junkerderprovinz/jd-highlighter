@@ -19,18 +19,8 @@ jobs:
           distribution: temurin
           java-version: '25'
 
-      - name: Build the theme agent (--release 21) + assert class major version 65
-        run: |
-          mkdir -p build/agent
-          javac --release 21 -d build/agent \
-            agent/src/io/github/junkerderprovinz/HighlighterThemeAgent.java
-          # JD runs on Java 21; a class-69 agent crash-loops the GUI. Lock major version 65.
-          javap -v -classpath build/agent io.github.junkerderprovinz.HighlighterThemeAgent \
-            | grep 'major version: 65'
-          ( cd build/agent && jar cfm \
-              "$GITHUB_WORKSPACE/agent/jd-highlighter-agent.jar" \
-              "$GITHUB_WORKSPACE/agent/manifest.mf" io )
-          echo "Built agent/jd-highlighter-agent.jar (Java 21 target)"
+      - name: Build the theme agent
+        run: sh agent/build.sh
 
       - name: Package the release zip (theme + installers + lib + agent jar)
         run: |

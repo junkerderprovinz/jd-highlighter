@@ -25,10 +25,13 @@ function Get-AccentFg([string]$hex) {
   $L = 0.2126*(Convert-SrgbLin $r) + 0.7152*(Convert-SrgbLin $g) + 0.0722*(Convert-SrgbLin $b)
   if ($L -ge 0.5) { return "#161616" } else { return "#f4f4f4" }
 }
+# @@ACCENT_HEX@@ and @@ACCENT_FG_HEX@@ are the bare rrggbb that JD's colour JSON needs.
 function Render-Properties([string]$tmpl, [string]$accent, [string]$out) {
   if (-not $accent.StartsWith('#')) { $accent = "#$accent" }
   $fg = Get-AccentFg $accent
-  $text = (Get-Content $tmpl -Raw) -replace '@@ACCENT@@', $accent -replace '@@ACCENT_FG@@', $fg
+  $text = (Get-Content $tmpl -Raw) `
+    -replace '@@ACCENT_HEX@@', $accent.TrimStart('#') -replace '@@ACCENT_FG_HEX@@', $fg.TrimStart('#') `
+    -replace '@@ACCENT@@', $accent -replace '@@ACCENT_FG@@', $fg
   Write-TextFileNoBom $out $text
 }
 
@@ -63,10 +66,13 @@ while (-not $JdDir -or -not (Test-Path (Join-Path $JdDir "cfg"))) {
   if (-not $JdDir) { Write-Host "Cancelled - nothing changed."; Hold; exit 1 }
 }
 
+if (-not $Accent) { if ($env:JD_HL_ACCENT) { $Accent = $env:JD_HL_ACCENT } else { $Accent = "#ffee00" } }
+if (-not $Accent.StartsWith('#')) { $Accent = "#$Accent" }
+
 $lafDir = Join-Path $JdDir "cfg\laf"
 New-Item -ItemType Directory -Force -Path $lafDir | Out-Null
-Copy-Item $src (Join-Path $lafDir "FlatDarkLaf.json") -Force
-Write-Host "Copied FlatDarkLaf.json -> $lafDir"
+Render-Properties $src $Accent (Join-Path $lafDir "FlatDarkLaf.json")
+Write-Host "Wrote FlatDarkLaf.json (accent=$Accent) -> $lafDir"
 
 $gui = Join-Path $JdDir "cfg\org.jdownloader.settings.GraphicalUserInterfaceSettings.json"
 if ($PSVersionTable.PSVersion.Major -ge 6) {
@@ -74,9 +80,7 @@ if ($PSVersionTable.PSVersion.Major -ge 6) {
   if (Test-Path $gui) { try { $d = Get-Content $gui -Raw | ConvertFrom-Json -AsHashtable } catch { $d = @{} } }
   if ($null -eq $d) { $d = @{} }
   $d["lookandfeeltheme"] = "FLATLAF_DARK"
-  # Also switch off JDownloader's built-in advertisements so the GUI stays clean
-  # and the download graph keeps its full height (the "Become premium user" banner
-  # otherwise squeezes it). Ads only; Donate and functional settings stay untouched.
+  # JD's own advertising: the premium banner also squeezes the download graph.
   $d["bannerenabled"] = $false
   $d["statusbaraddpremiumbuttonvisible"] = $false
   $d["premiumalertspeedcolumnenabled"] = $false
@@ -86,15 +90,11 @@ if ($PSVersionTable.PSVersion.Major -ge 6) {
   $d["specialdealsenabled"] = $false
   $d["specialdealoboomdialogvisibleonstartup"] = $false
   ($d | ConvertTo-Json -Depth 10) | Out-File -FilePath $gui -Encoding utf8
-  Write-Host "Set lookandfeeltheme=FLATLAF_DARK + disabled built-in ads"
+  Write-Host "Set lookandfeeltheme=FLATLAF_DARK and turned off JD's ads"
 } else {
-  Write-Host "NOTE: Windows PowerShell 5.1 - now open JDownloader and pick"
+  Write-Host "NOTE: Windows PowerShell 5.1. Open JDownloader and pick"
   Write-Host "      Settings > GUI > Look & Feel > FLATLAF_DARK once."
 }
-
-# Render the accented FlatLaf control theme and wire the theme agent.
-if (-not $Accent) { if ($env:JD_HL_ACCENT) { $Accent = $env:JD_HL_ACCENT } else { $Accent = "#ffee00" } }
-if (-not $Accent.StartsWith('#')) { $Accent = "#$Accent" }
 
 $hlRoot = Join-Path $JdDir ".jd-highlighter"
 $hlDir  = Join-Path $hlRoot "flatlaf-defaults"
@@ -103,7 +103,14 @@ Render-Properties (Join-Path $here "theme\flatlaf\FlatDarkLaf.properties.tmpl") 
 Write-TextFileNoBom (Join-Path $hlRoot "accent") ("{0}`n" -f $Accent)
 Write-Host "Rendered FlatDarkLaf.properties (accent=$Accent) -> $hlDir"
 
-# Copy the theme agent jar (built in CI). Tolerate a missing jar so the theme JSON still applies.
+foreach ($set in "icons", "jd-tabler") {
+  $dst = Join-Path $hlRoot $set
+  if (Test-Path $dst) { Remove-Item -Recurse -Force $dst }
+  Copy-Item -Recurse (Join-Path $here "theme\$set") $dst
+}
+Write-Host "Copied the icon sets -> $hlRoot"
+
+# The release zip carries the jar built in CI; without it the colours still apply.
 $agentSrc = Join-Path $here "agent\jd-highlighter-agent.jar"
 $agent    = Join-Path $hlRoot "jd-highlighter-agent.jar"
 if (Test-Path $agentSrc) {
@@ -111,33 +118,32 @@ if (Test-Path $agentSrc) {
   Write-Host "Installed jd-highlighter-agent.jar -> $hlRoot"
 } else {
   Write-Host "NOTE: $agentSrc not found (the release jar is built in CI)."
-  Write-Host "      The .vmoptions line is still wired to $agent for when the jar is present."
+  Write-Host "      The .vmoptions lines still point at $agent for when the jar is there."
 }
 
-# Wire the agent via install4j's JDownloader2.vmoptions (next to the launcher). One idempotent line.
-$line = "-javaagent:$agent=$hlDir"
-$vmo  = Join-Path $JdDir "JDownloader2.vmoptions"
+# install4j reads JDownloader2.vmoptions next to the launcher. Old JD Highlighter lines
+# are dropped first, so running the installer again leaves exactly one pair.
+$homeLine  = "-Djd.highlighter.home=$hlRoot"
+$agentLine = "-javaagent:$agent"
+$vmo = Join-Path $JdDir "JDownloader2.vmoptions"
 try {
-  if (-not (Test-Path $vmo)) { Write-TextFileNoBom $vmo "" }
-  $vmoText = Get-Content $vmo -Raw -ErrorAction SilentlyContinue
-  if ($null -eq $vmoText) { $vmoText = "" }
-  if ($vmoText -match 'jd-highlighter-agent\.jar') {
-    Write-Host "Agent already wired in $vmo (left as-is)"
-  } else {
-    if ($vmoText.Length -gt 0 -and -not $vmoText.EndsWith("`n")) { $vmoText += "`n" }
-    $vmoText += "$line`n"
-    Write-TextFileNoBom $vmo $vmoText
-    Write-Host "Wired the theme agent -> $vmo"
+  $kept = @()
+  if (Test-Path $vmo) {
+    $kept = @(Get-Content $vmo | Where-Object {
+      $_ -notmatch 'jd-highlighter-agent\.jar' -and $_ -notmatch 'jd\.highlighter\.home' -and $_ -notmatch 'jd-highlighter\.vmoptions'
+    })
   }
+  $kept += $homeLine, $agentLine
+  Write-TextFileNoBom $vmo (($kept -join "`n") + "`n")
+  Write-Host "Wired the theme agent -> $vmo"
 } catch {
-  # Non-writable launcher dir: keep the agent line in a user file + tell the user how to redirect.
   $userVmo = Join-Path $hlRoot "jd-highlighter.vmoptions"
-  Write-TextFileNoBom $userVmo "$line`n"
+  Write-TextFileNoBom $userVmo "$homeLine`n$agentLine`n"
   Write-Host "NOTE: could not edit $vmo ($($_.Exception.Message))."
-  Write-Host "      Wrote $userVmo. Add ONE line to your JDownloader .vmoptions:"
+  Write-Host "      Wrote $userVmo. Add this line to your JDownloader .vmoptions:"
   Write-Host "        -include-options $userVmo"
-  Write-Host "      Last-resort fallback (survives every JD relaunch):"
-  Write-Host "        setx JAVA_TOOL_OPTIONS `"$line`""
+  Write-Host "      Or, as a last resort that survives every JD relaunch:"
+  Write-Host "        setx JAVA_TOOL_OPTIONS `"$homeLine $agentLine`""
 }
 
 Write-Host "Done. Restart JDownloader."
