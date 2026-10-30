@@ -14,8 +14,7 @@ mkdir -p build/classes
 curl -fsSL "$ASM_URL" -o build/asm.jar
 echo "$ASM_SHA  build/asm.jar" | sha256sum -c -
 
-javac --release 8 -nowarn -cp build/asm.jar -d build/classes \
-  src/io/github/junkerderprovinz/DialogConfirmAgent.java
+javac --release 8 -nowarn -cp build/asm.jar -d build/classes src/io/github/junkerderprovinz/*.java
 javap -v -classpath build/classes io.github.junkerderprovinz.DialogConfirmAgent | grep -q 'major version: 52'
 
 (cd build/classes && jar xf ../asm.jar org/objectweb/asm)

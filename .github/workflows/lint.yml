@@ -54,10 +54,10 @@ jobs:
       - name: Agent matches the container's copy
         run: |
           ref=$(cat agent/UPSTREAM)
-          curl -fsSL "https://raw.githubusercontent.com/junkerderprovinz/jdownloader/$ref/agent/src/io/github/junkerderprovinz/DialogConfirmAgent.java" -o upstream.java
-          curl -fsSL "https://raw.githubusercontent.com/junkerderprovinz/jdownloader/$ref/rootfs/opt/JDownloader/flatlaf-defaults/highlighter.properties.tmpl" -o upstream.tmpl
-          diff -q upstream.java agent/src/io/github/junkerderprovinz/DialogConfirmAgent.java
-          diff -q upstream.tmpl theme/flatlaf/FlatDarkLaf.properties.tmpl
+          mkdir upstream
+          curl -fsSL "https://codeload.github.com/junkerderprovinz/jdownloader/tar.gz/$ref" | tar xz -C upstream --strip-components=1
+          diff -r upstream/agent/src agent/src
+          diff -q upstream/rootfs/opt/JDownloader/flatlaf-defaults/highlighter.properties.tmpl theme/flatlaf/FlatDarkLaf.properties.tmpl
 
   installer-pwsh:
     runs-on: ubuntu-latest
