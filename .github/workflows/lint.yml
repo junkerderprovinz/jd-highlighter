@@ -72,6 +72,8 @@ jobs:
           New-Item -ItemType Directory -Force -Path (Join-Path $jd "cfg") | Out-Null
           $gui = Join-Path $jd "cfg/org.jdownloader.settings.GraphicalUserInterfaceSettings.json"
           '{"foo":"bar"}' | Set-Content -Path $gui -Encoding utf8
+          # The real jar is built in the release job; the installer only wires one that exists.
+          'placeholder' | Set-Content -Path ./agent/jd-highlighter-agent.jar
 
           & ./install/install.ps1 -JdDir $jd -Accent "#ffee00"
           if ($LASTEXITCODE) { throw "install.ps1 exited with $LASTEXITCODE" }
