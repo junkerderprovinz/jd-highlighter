@@ -114,8 +114,8 @@ accent-free "JD Plain in dark" instead? Use that one; JD Highlighter is the bord
 
 JD Highlighter runs on the **desktop app** and in the **Docker container**. On both, the accent and
 the look are picked in JD itself: **Settings → User Interface** has an **Accent colour** row with a
-colour picker and an **Appearance** row. On the desktop it offers Highlighter Dark and Highlighter
-Light; in the container also the container's other looks (see below). JD offers a restart after a
+colour picker and an **Appearance** row. On the desktop it offers JD Highlighter Dark and JD
+Highlighter Light; in the container also the container's other looks (see below). JD offers a restart after a
 change, and the new look shows once it is back.
 
 ### Desktop (Windows / macOS / Linux)
@@ -164,8 +164,8 @@ If JDownloader is installed in a read-only folder, the installer writes the line
 
 Both themes are bundled in the [JDownloader-for-Unraid container](https://github.com/junkerderprovinz/jdownloader),
 and JD Highlighter Dark is its default. The **Appearance** row in JD's settings offers all of the
-container's looks: Highlighter Dark, Highlighter Light, Plain Dark (the plain Carbon look),
-Light and JDownloader classic. The pick and the accent are kept in `/config/.jd-highlighter`, so
+container's looks: JD Highlighter Dark, JD Highlighter Light, JD Plain Dark (the plain Carbon
+look), FlatLaf Light and JD Default (JDownloader's classic look). The pick and the accent are kept in `/config/.jd-highlighter`, so
 they survive image updates. `JD_THEME` only sets the look a container starts with until one is
 picked in JD:
 
