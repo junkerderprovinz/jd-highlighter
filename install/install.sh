@@ -82,7 +82,12 @@ HLDIR="$HLROOT/flatlaf-defaults"
 mkdir -p "$HLDIR"
 render_properties "$HERE/theme/flatlaf/$LAF.properties.tmpl" "$ACCENT" "$HLDIR/$LAF.properties"
 printf '%s\n' "$ACCENT" > "$HLROOT/accent"
+printf '%s\n' "$VARIANT" > "$HLROOT/variant"
 echo "Rendered $LAF.properties (accent=$ACCENT) -> $HLDIR/"
+
+# The agent renders from these when the accent or the variant is changed in JD's settings.
+mkdir -p "$HLROOT/templates"
+cp "$HERE"/theme/flatlaf/*.properties.tmpl "$HERE"/theme/cfg/laf/*.json "$HLROOT/templates/"
 
 rm -rf "$HLROOT/icons" "$HLROOT/jd-tabler"
 cp -R "$HERE/theme/icons" "$HLROOT/icons"
@@ -101,10 +106,9 @@ fi
 
 # install4j reads JDownloader2.vmoptions next to the launcher on Linux and
 # Contents/vmoptions.txt inside the app bundle on macOS. Old JD Highlighter lines are
-# dropped first, so running the installer again leaves exactly one set. Java refuses to
+# dropped first, so running the installer again leaves exactly one pair. Java refuses to
 # start with a -javaagent whose jar is missing, so that line needs the jar.
 HOMELINE="-Djd.highlighter.home=$HLROOT"
-VARIANTLINE="-Djd.highlighter.variant=$VARIANT"
 AGENTLINE=""
 if [ -f "$AGENT" ]; then
   AGENTLINE="-javaagent:$AGENT"
@@ -118,17 +122,17 @@ if [ -d "$JD_DIR/Contents" ]; then VMDIR="$JD_DIR/Contents"; VMO="$JD_DIR/Conten
 if [ -w "$VMDIR" ] || { [ -f "$VMO" ] && [ -w "$VMO" ]; }; then
   touch "$VMO"
   sed -e '/jd-highlighter-agent\.jar/d' -e '/jd\.highlighter\.home/d' -e '/jd\.highlighter\.variant/d' -e '/jd-highlighter\.vmoptions/d' "$VMO" > "$VMO.tmp"
-  printf '%s\n' "$HOMELINE" "$VARIANTLINE" ${AGENTLINE:+"$AGENTLINE"} >> "$VMO.tmp"
+  printf '%s\n' "$HOMELINE" ${AGENTLINE:+"$AGENTLINE"} >> "$VMO.tmp"
   mv "$VMO.tmp" "$VMO"
   echo "Wired the theme agent -> $VMO"
 else
   USERVMO="$HLROOT/jd-highlighter.vmoptions"
-  printf '%s\n' "$HOMELINE" "$VARIANTLINE" ${AGENTLINE:+"$AGENTLINE"} > "$USERVMO"
+  printf '%s\n' "$HOMELINE" ${AGENTLINE:+"$AGENTLINE"} > "$USERVMO"
   echo "NOTE: $VMDIR is not writable, so $VMO stays as it is." >&2
   echo "      Wrote $USERVMO. Add this line to your JDownloader .vmoptions:" >&2
   echo "        -include-options $USERVMO" >&2
   echo "      Or, as a last resort that survives every JD relaunch:" >&2
-  echo "        export JAVA_TOOL_OPTIONS=\"$HOMELINE $VARIANTLINE $AGENTLINE\"" >&2
+  echo "        export JAVA_TOOL_OPTIONS=\"$HOMELINE $AGENTLINE\"" >&2
 fi
 
 echo "Done. Restart JDownloader."

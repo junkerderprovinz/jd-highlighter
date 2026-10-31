@@ -105,7 +105,14 @@ $hlDir  = Join-Path $hlRoot "flatlaf-defaults"
 New-Item -ItemType Directory -Force -Path $hlDir | Out-Null
 Render-Properties (Join-Path $here "theme\flatlaf\$laf.properties.tmpl") $Accent (Join-Path $hlDir "$laf.properties")
 Write-TextFileNoBom (Join-Path $hlRoot "accent") ("{0}`n" -f $Accent)
+Write-TextFileNoBom (Join-Path $hlRoot "variant") ("{0}`n" -f $Variant)
 Write-Host "Rendered $laf.properties (accent=$Accent) -> $hlDir"
+
+# The agent renders from these when the accent or the variant is changed in JD's settings.
+$tplDir = Join-Path $hlRoot "templates"
+New-Item -ItemType Directory -Force -Path $tplDir | Out-Null
+Copy-Item (Join-Path $here "theme\flatlaf\*.properties.tmpl") $tplDir -Force
+Copy-Item (Join-Path $here "theme\cfg\laf\*.json") $tplDir -Force
 
 foreach ($set in "icons", "jd-tabler") {
   $dst = Join-Path $hlRoot $set
@@ -128,14 +135,13 @@ if (Test-Path $agentSrc) {
 }
 
 # install4j reads JDownloader2.vmoptions next to the launcher. Old JD Highlighter lines
-# are dropped first, so running the installer again leaves exactly one set. Java refuses
+# are dropped first, so running the installer again leaves exactly one pair. Java refuses
 # to start with a -javaagent whose jar is missing, so that line needs the jar.
-$homeLine    = "-Djd.highlighter.home=$hlRoot"
-$variantLine = "-Djd.highlighter.variant=$Variant"
+$homeLine  = "-Djd.highlighter.home=$hlRoot"
 $agentLine = $null
 if (Test-Path $agent) { $agentLine = "-javaagent:$agent" }
 else { Write-Host "NOTE: there is no jd-highlighter-agent.jar in this folder, so only the colours apply." }
-$wire = @($homeLine, $variantLine, $agentLine) | Where-Object { $_ }
+$wire = @($homeLine, $agentLine) | Where-Object { $_ }
 $vmo = Join-Path $JdDir "JDownloader2.vmoptions"
 try {
   $kept = @()

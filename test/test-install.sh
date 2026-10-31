@@ -104,7 +104,8 @@ grep -q 'jd\.highlighter\.home' "$VMO6" || { echo "FAIL(6): home line missing"; 
 [ "$(cat "$TMP6/jd/.jd-highlighter/accent")" = "#ffee00" ] || { echo "FAIL(6): broken accent kept"; exit 1; }
 echo "PASS(6) no jar, no agent line; broken accent falls back"
 
-# Test 7: the light variant writes the FlatLaf Light files, and switching back to dark leaves one variant line.
+# Test 7: the light variant writes the FlatLaf Light files and stores the variant and the templates the
+# agent renders from when the variant changes in JD's settings.
 mkdir -p "$TMP7/cfg"
 sh "$ROOT/install/install.sh" "$TMP7" "#ffee00" light </dev/null
 test -f "$TMP7/cfg/laf/FlatLightLaf.json" || { echo "FAIL(7): FlatLightLaf.json not written"; exit 1; }
@@ -114,10 +115,12 @@ grep -Eq '^@background +=  ?#f4f4f4$' "$PROPS7" || { echo "FAIL(7): light base m
 if grep -q '@@' "$PROPS7"; then echo "FAIL(7): leftover @@ token in the light .properties"; exit 1; fi
 grep -q 'FLATLAF_LIGHT' "$TMP7/cfg/org.jdownloader.settings.GraphicalUserInterfaceSettings.json" \
   || { echo "FAIL(7): lookandfeeltheme not FLATLAF_LIGHT"; exit 1; }
-grep -qx -- '-Djd.highlighter.variant=light' "$TMP7/JDownloader2.vmoptions" || { echo "FAIL(7): variant line missing"; exit 1; }
+[ "$(cat "$TMP7/.jd-highlighter/variant")" = light ] || { echo "FAIL(7): variant not stored"; exit 1; }
+for t in FlatDarkLaf.properties.tmpl FlatLightLaf.properties.tmpl FlatDarkLaf.json FlatLightLaf.json; do
+  test -f "$TMP7/.jd-highlighter/templates/$t" || { echo "FAIL(7): template $t not copied"; exit 1; }
+done
 sh "$ROOT/install/install.sh" "$TMP7" "#ffee00" dark </dev/null
-[ "$(grep -c 'jd\.highlighter\.variant' "$TMP7/JDownloader2.vmoptions")" = 1 ] || { echo "FAIL(7): variant line duplicated"; exit 1; }
-grep -qx -- '-Djd.highlighter.variant=dark' "$TMP7/JDownloader2.vmoptions" || { echo "FAIL(7): switch back to dark not wired"; exit 1; }
+[ "$(cat "$TMP7/.jd-highlighter/variant")" = dark ] || { echo "FAIL(7): switch back to dark not stored"; exit 1; }
 if sh "$ROOT/install/install.sh" "$TMP7" "#ffee00" sepia </dev/null 2>/dev/null; then echo "FAIL(7): unknown variant accepted"; exit 1; fi
 echo "PASS(7) light variant and switching back"
 
