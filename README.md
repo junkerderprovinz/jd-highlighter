@@ -24,15 +24,33 @@ controls. Input fields are defined by <i>fill, not frames</i>; large fills stay 
 readable at <i>any</i> accent hue. Works on the JDownloader <b>desktop app</b> and the <b>Docker container</b>.
 </p>
 
+<!-- download-buttons: written by scripts/gen_download_buttons.py -->
+<p align="center">
+  <a href="https://ca.unraid.net/apps/jdownloader-18m0vwh17mexzh"><img src="https://raw.githubusercontent.com/junkerderprovinz/jd-highlighter/main/.github/assets/download-buttons/buttons.svg?v=d14536303919#svgView(viewBox(0,0,841.9,245.3))" alt="Install from Unraid&#x27;s Community Applications" width="160" height="46.618"></a>
+  &nbsp;
+  <a href="https://github.com/junkerderprovinz/jd-highlighter/releases/latest"><img src="https://raw.githubusercontent.com/junkerderprovinz/jd-highlighter/main/.github/assets/download-buttons/buttons.svg?v=d14536303919#svgView(viewBox(866,0,841.9,245.3))" alt="Download the source archive" width="160" height="46.618"></a>
+</p>
+<br>
+<p align="center">
+  <a href="https://github.com/junkerderprovinz/jd-highlighter/releases/latest"><img src="https://raw.githubusercontent.com/junkerderprovinz/jd-highlighter/main/.github/assets/download-buttons/buttons.svg?v=d14536303919#svgView(viewBox(1732,0,841.9,245.3))" alt="Download for Windows" width="160" height="46.618"></a>
+  &nbsp;
+  <a href="https://github.com/junkerderprovinz/jd-highlighter/releases/latest"><img src="https://raw.githubusercontent.com/junkerderprovinz/jd-highlighter/main/.github/assets/download-buttons/buttons.svg?v=d14536303919#svgView(viewBox(2598,0,841.9,245.3))" alt="Download for macOS" width="160" height="46.618"></a>
+  &nbsp;
+  <a href="https://github.com/junkerderprovinz/jd-highlighter/releases/latest"><img src="https://raw.githubusercontent.com/junkerderprovinz/jd-highlighter/main/.github/assets/download-buttons/buttons.svg?v=d14536303919#svgView(viewBox(3464,0,841.9,245.3))" alt="Download for Linux" width="160" height="46.618"></a>
+</p>
+<!-- /download-buttons -->
+
 <br>
 
+<!-- give-buttons: written by scripts/gen_download_buttons.py -->
 <p align="center">
-  <a href="https://buymeacoffee.com/junkerderprovinz"><img src="https://raw.githubusercontent.com/junkerderprovinz/junkerderprovinz/main/donate/buttons/button-buy-me-a-coffee-live.svg" alt="Buy me a coffee" width="160"></a>
+  <a href="https://buymeacoffee.com/junkerderprovinz"><img src="https://raw.githubusercontent.com/junkerderprovinz/jd-highlighter/main/.github/assets/download-buttons/buttons.svg?v=d14536303919#svgView(viewBox(4330,0,841.9,245.3))" alt="Buy me a coffee" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://www.paypal.com/donate/?hosted_button_id=76FVV52TKXTUS"><img src="https://raw.githubusercontent.com/junkerderprovinz/junkerderprovinz/main/donate/buttons/button-paypal-live.svg" alt="PayPal" width="160"></a>
+  <a href="https://www.paypal.com/donate/?hosted_button_id=76FVV52TKXTUS"><img src="https://raw.githubusercontent.com/junkerderprovinz/jd-highlighter/main/.github/assets/download-buttons/buttons.svg?v=d14536303919#svgView(viewBox(5196,0,841.9,245.3))" alt="PayPal" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://junkerderprovinz.github.io/junkerderprovinz/"><img src="https://raw.githubusercontent.com/junkerderprovinz/junkerderprovinz/main/donate/buttons/button-crypto-live.svg" alt="Donate with crypto" width="160"></a>
+  <a href="https://junkerderprovinz.github.io/junkerderprovinz/"><img src="https://raw.githubusercontent.com/junkerderprovinz/jd-highlighter/main/.github/assets/download-buttons/buttons.svg?v=d14536303919#svgView(viewBox(6062,0,841.9,245.3))" alt="Donate with crypto" width="160" height="46.618"></a>
 </p>
+<!-- /give-buttons -->
 
 <br>
 
@@ -84,11 +102,15 @@ accent-free "JD Plain in dark" instead? Use that one; JD Highlighter is the bord
   <em>The download list on its card, with the default electric-yellow accent <code>#ffee00</code>.</em>
 </p>
 
+<br>
+
 <p align="center">
   <img src="docs/screenshots/linkgrabber.png" alt="JD Highlighter: the LinkGrabber with its views column, overview and bottom bar as cards" width="90%">
   <br>
   <em>The LinkGrabber: list, views column, overview and bottom bar each sit on their own card.</em>
 </p>
+
+<br>
 
 <p align="center">
   <img src="docs/screenshots/settings.png" alt="JD Highlighter Dark: the User Interface settings with full-height tiles, section cards and the Accent colour and Appearance rows" width="90%">
@@ -96,11 +118,15 @@ accent-free "JD Plain in dark" instead? Use that one; JD Highlighter is the bord
   <em>Settings with full-height tiles and section cards. Accent colour and Appearance sit under User Interface.</em>
 </p>
 
+<br>
+
 <p align="center">
   <img src="docs/screenshots/menu.png" alt="JD Highlighter: an open menu with mono Tabler glyphs, spinners and check boxes" width="90%">
   <br>
   <em>Menus with mono Tabler glyphs and the accent on hover.</em>
 </p>
+
+<br>
 
 <p align="center">
   <img src="docs/screenshots/preview-accent.png" alt="JD Highlighter with a blue accent: the same theme with one colour changed" width="90%">
@@ -108,11 +134,15 @@ accent-free "JD Plain in dark" instead? Use that one; JD Highlighter is the bord
   <em>The same theme with one colour changed: a blue accent <code>#4589ff</code>. Large surfaces stay neutral.</em>
 </p>
 
+<br>
+
 <p align="center">
   <img src="docs/screenshots/preview-light.png" alt="JD Highlighter Light: the same download list on #f4f4f4 with white cards" width="90%">
   <br>
   <em>JD Highlighter Light: the same design on <code>#f4f4f4</code>.</em>
 </p>
+
+<br>
 
 <p align="center">
   <img src="docs/screenshots/settings-light.png" alt="JD Highlighter Light: the User Interface settings with the open Appearance menu listing JD Highlighter Dark and Light and JD Plain Dark and Light" width="90%">
@@ -266,12 +296,14 @@ JD Highlighter is free software under the **GNU Affero General Public License v3
 
 If this made JDownloader a little easier on the eyes, you can
 
+<!-- give-buttons: written by scripts/gen_download_buttons.py -->
 <p align="center">
-  <a href="https://buymeacoffee.com/junkerderprovinz"><img src="https://raw.githubusercontent.com/junkerderprovinz/junkerderprovinz/main/donate/buttons/button-buy-me-a-coffee-live.svg" alt="Buy me a coffee" width="160"></a>
+  <a href="https://buymeacoffee.com/junkerderprovinz"><img src="https://raw.githubusercontent.com/junkerderprovinz/jd-highlighter/main/.github/assets/download-buttons/buttons.svg?v=d14536303919#svgView(viewBox(4330,0,841.9,245.3))" alt="Buy me a coffee" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://www.paypal.com/donate/?hosted_button_id=76FVV52TKXTUS"><img src="https://raw.githubusercontent.com/junkerderprovinz/junkerderprovinz/main/donate/buttons/button-paypal-live.svg" alt="PayPal" width="160"></a>
+  <a href="https://www.paypal.com/donate/?hosted_button_id=76FVV52TKXTUS"><img src="https://raw.githubusercontent.com/junkerderprovinz/jd-highlighter/main/.github/assets/download-buttons/buttons.svg?v=d14536303919#svgView(viewBox(5196,0,841.9,245.3))" alt="PayPal" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://junkerderprovinz.github.io/junkerderprovinz/"><img src="https://raw.githubusercontent.com/junkerderprovinz/junkerderprovinz/main/donate/buttons/button-crypto-live.svg" alt="Donate with crypto" width="160"></a>
+  <a href="https://junkerderprovinz.github.io/junkerderprovinz/"><img src="https://raw.githubusercontent.com/junkerderprovinz/jd-highlighter/main/.github/assets/download-buttons/buttons.svg?v=d14536303919#svgView(viewBox(6062,0,841.9,245.3))" alt="Donate with crypto" width="160" height="46.618"></a>
 </p>
+<!-- /give-buttons -->
 
 Issues and suggestions: [GitHub Issues](https://github.com/junkerderprovinz/jd-highlighter/issues).
