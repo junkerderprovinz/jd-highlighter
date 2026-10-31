@@ -163,15 +163,16 @@ If JDownloader is installed in a read-only folder, the installer writes the line
 ### Container (Docker / Unraid)
 
 Both themes are bundled in the [JDownloader-for-Unraid container](https://github.com/junkerderprovinz/jdownloader),
-and JD Highlighter Dark is its default. The **Appearance** row in JD's settings offers all of the
-container's looks: JD Highlighter Dark, JD Highlighter Light, JD Plain Dark (the plain Carbon
-look), FlatLaf Light and JD Default (JDownloader's classic look). The pick and the accent are kept in `/config/.jd-highlighter`, so
-they survive image updates. `JD_THEME` only sets the look a container starts with until one is
-picked in JD:
+and JD Highlighter Dark is its default. The **Appearance** row in JD's settings offers the
+container's four looks: JD Highlighter Dark, JD Highlighter Light, JD Plain Dark and JD Plain
+Light (the plain Carbon look in dark and light). The pick and the accent are kept in
+`/config/.jd-highlighter`, so they survive image updates. `JD_THEME` only sets the look a
+container starts with until one is picked in JD, and it is the one way to JDownloader's classic
+look (`JDDEFAULT`):
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `JD_THEME` | `jd-highlighter-dark` | `jd-highlighter-dark` (also `Dark`), `jd-highlighter-light`, `plain-dark`, `Light` or `JDDEFAULT` |
+| `JD_THEME` | `jd-highlighter-dark` | `jd-highlighter-dark` (also `Dark`), `jd-highlighter-light`, `plain-dark`, `Light` (JD Plain Light) or `JDDEFAULT` |
 
 Before each JD start the theme script writes the accent into the control theme and computes the
 auto-contrast button text.
