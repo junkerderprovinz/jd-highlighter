@@ -466,8 +466,8 @@ final class LafDefaults {
             }
         } catch (Throwable ignore) { }
         if (hex == null || hex.isEmpty()) {
-            String env = System.getenv("JD_ACCENT");
-            hex = (env != null && !env.isEmpty()) ? env : "#ffee00";
+            String stored = Appearance.storedAccent();
+            hex = stored != null ? stored : Appearance.DEFAULT_ACCENT;
         }
         if (!hex.startsWith("#")) hex = "#" + hex;
         try { accentCache = Color.decode(hex); }
@@ -483,5 +483,13 @@ final class LafDefaults {
         Color a = accentColor();
         double lum = 0.299 * a.getRed() + 0.587 * a.getGreen() + 0.114 * a.getBlue();
         return lum > 140 ? INK_DARK : INK_LIGHT;
+    }
+
+    /** The accent as hover text or glyph on the surface. A light accent does not read on the light
+     *  palette's white cards, so there it is darkened. */
+    static Color hoverInk() {
+        Color a = accentColor();
+        if (!LIGHT || INK_LIGHT.equals(accentFg())) return a;
+        return new Color(a.getRed() * 55 / 100, a.getGreen() * 55 / 100, a.getBlue() * 55 / 100);
     }
 }
