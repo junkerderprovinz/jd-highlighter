@@ -113,9 +113,10 @@ accent-free "JD Plain in dark" instead? Use that one; JD Highlighter is the bord
 ## 3. Install
 
 JD Highlighter runs on the **desktop app** and in the **Docker container**. On both, the accent and
-the dark or light variant are picked in JD itself: **Settings → User Interface** has an
-**Accent colour** row with a colour picker and an **Appearance** row for Dark or Light. JD offers a
-restart after a change, and the new look shows once it is back.
+the look are picked in JD itself: **Settings → User Interface** has an **Accent colour** row with a
+colour picker and an **Appearance** row. On the desktop it offers Highlighter Dark and Highlighter
+Light; in the container also the container's other looks (see below). JD offers a restart after a
+change, and the new look shows once it is back.
 
 ### Desktop (Windows / macOS / Linux)
 
@@ -162,16 +163,18 @@ If JDownloader is installed in a read-only folder, the installer writes the line
 ### Container (Docker / Unraid)
 
 Both themes are bundled in the [JDownloader-for-Unraid container](https://github.com/junkerderprovinz/jdownloader),
-and JD Highlighter Dark is its default. `JD_THEME` picks the theme family:
+and JD Highlighter Dark is its default. The **Appearance** row in JD's settings offers all of the
+container's looks: Highlighter Dark, Highlighter Light, Plain Dark (the plain Carbon look),
+Light and JDownloader classic. The pick and the accent are kept in `/config/.jd-highlighter`, so
+they survive image updates. `JD_THEME` only sets the look a container starts with until one is
+picked in JD:
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `JD_THEME` | `jd-highlighter-dark` | `jd-highlighter-dark` (also `Dark`) or `jd-highlighter-light` for JD Highlighter; `plain-dark`, `Light` and `JDDEFAULT` give the container's other looks |
+| `JD_THEME` | `jd-highlighter-dark` | `jd-highlighter-dark` (also `Dark`), `jd-highlighter-light`, `plain-dark`, `Light` or `JDDEFAULT` |
 
-The accent and the variant come from JD's settings, as above. The container keeps them in
-`/config/.jd-highlighter`, so they survive image updates, and a variant picked there wins over
-the one in `JD_THEME`. Before each JD start the theme script writes the accent into the control
-theme and computes the auto-contrast button text.
+Before each JD start the theme script writes the accent into the control theme and computes the
+auto-contrast button text.
 
 <br>
 
