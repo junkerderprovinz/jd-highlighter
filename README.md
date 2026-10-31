@@ -112,8 +112,10 @@ accent-free "JD Plain in dark" instead? Use that one; JD Highlighter is the bord
 
 ## 3. Install
 
-JD Highlighter runs on the **desktop app** and in the **Docker container**. The accent is a single
-value you choose; it is baked in at apply time (set the value, then restart; there is no live colour wheel).
+JD Highlighter runs on the **desktop app** and in the **Docker container**. On both, the accent and
+the dark or light variant are picked in JD itself: **Settings → User Interface** has an
+**Accent colour** row with a colour picker and an **Appearance** row for Dark or Light. JD offers a
+restart after a change, and the new look shows once it is back.
 
 ### Desktop (Windows / macOS / Linux)
 
@@ -135,12 +137,13 @@ The installer writes the Carbon colours into JD's `cfg/laf/`, selects the `FLATL
 Look & Feel (`FLATLAF_LIGHT` for Light) and switches off JD's built-in ads. Into
 `<JD>/.jd-highlighter/` it renders the accented control theme (`FlatDarkLaf.properties` or
 `FlatLightLaf.properties`) and copies the theme agent (`jd-highlighter-agent.jar`) with its
-icons. Three lines in JDownloader's install4j `.vmoptions` (`JDownloader2.vmoptions`, or
-`Contents/vmoptions.txt` inside the macOS bundle) load the agent and name the variant;
-running the installer again replaces them instead of adding more.
+icons and the templates it renders from when you change the accent or the variant in JD. Two
+lines in JDownloader's install4j `.vmoptions` (`JDownloader2.vmoptions`, or
+`Contents/vmoptions.txt` inside the macOS bundle) load the agent; running the installer again
+replaces them instead of adding more.
 
-**Choose the variant and the accent (desktop).** Pass them to the installer, then restart JDownloader.
-Running it again with the other variant switches between Dark and Light:
+**Start with another variant or accent (desktop).** The installer takes both as a starting point;
+later changes go through JD's settings as above:
 
 ```sh
 # Linux / macOS: the second argument is the accent, the third the variant
@@ -159,20 +162,16 @@ If JDownloader is installed in a read-only folder, the installer writes the line
 ### Container (Docker / Unraid)
 
 Both themes are bundled in the [JDownloader-for-Unraid container](https://github.com/junkerderprovinz/jdownloader),
-and JD Highlighter Dark is its default. Two environment variables pick the theme and the accent,
-both re-applied on **every start**:
+and JD Highlighter Dark is its default. `JD_THEME` picks the theme family:
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `JD_THEME` | `jd-highlighter-dark` | `jd-highlighter-dark` (also `Dark`) or `jd-highlighter-light`; `plain-dark`, `Light` and `JDDEFAULT` give the container's other looks |
-| `JD_ACCENT` | `#ffee00` | Accent colour for both JD Highlighter themes (any hex) |
+| `JD_THEME` | `jd-highlighter-dark` | `jd-highlighter-dark` (also `Dark`) or `jd-highlighter-light` for JD Highlighter; `plain-dark`, `Light` and `JDDEFAULT` give the container's other looks |
 
-```bash
-docker run -e JD_THEME=jd-highlighter-light -e JD_ACCENT="#4589ff" ...   # or the fields in the Unraid template
-```
-
-**Change the accent (container):** edit `JD_ACCENT` and restart the container. The theme script
-writes the accent into the control theme and computes the auto-contrast button text on start.
+The accent and the variant come from JD's settings, as above. The container keeps them in
+`/config/.jd-highlighter`, so they survive image updates, and a variant picked there wins over
+the one in `JD_THEME`. Before each JD start the theme script writes the accent into the control
+theme and computes the auto-contrast button text.
 
 <br>
 
