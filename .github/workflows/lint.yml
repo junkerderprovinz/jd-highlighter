@@ -48,15 +48,18 @@ jobs:
           distribution: temurin
           java-version: '25'
 
-      - name: Compile the theme agent (--release 21) + assert class major version 65
+      - name: Build the theme agent and check its class version
+        run: sh agent/build.sh
+
+      - name: Agent matches the container's copy
         run: |
-          mkdir -p build/agent
-          javac --release 21 -d build/agent \
-            agent/src/io/github/junkerderprovinz/HighlighterThemeAgent.java
-          # JD runs on Java 21; a class-69 (Java 25) agent crash-loops the GUI. Lock major version 65.
-          javap -v -classpath build/agent io.github.junkerderprovinz.HighlighterThemeAgent \
-            | grep 'major version: 65'
-          echo "OK: agent compiles at class major version 65 (Java 21 target)"
+          ref=$(cat agent/UPSTREAM)
+          mkdir upstream
+          curl -fsSL "https://codeload.github.com/junkerderprovinz/jdownloader/tar.gz/$ref" | tar xz -C upstream --strip-components=1
+          diff -r upstream/agent/src agent/src
+          diff -q upstream/rootfs/opt/JDownloader/flatlaf-defaults/highlighter.properties.tmpl theme/flatlaf/FlatDarkLaf.properties.tmpl
+          diff -q upstream/rootfs/opt/JDownloader/flatlaf-defaults/highlighter-light.properties.tmpl theme/flatlaf/FlatLightLaf.properties.tmpl
+          diff -r upstream/rootfs/opt/jd-tabler/png theme/jd-tabler/png
 
   installer-pwsh:
     runs-on: ubuntu-latest
@@ -71,6 +74,8 @@ jobs:
           New-Item -ItemType Directory -Force -Path (Join-Path $jd "cfg") | Out-Null
           $gui = Join-Path $jd "cfg/org.jdownloader.settings.GraphicalUserInterfaceSettings.json"
           '{"foo":"bar"}' | Set-Content -Path $gui -Encoding utf8
+          # The real jar is built in the release job; the installer only wires one that exists.
+          'placeholder' | Set-Content -Path ./agent/jd-highlighter-agent.jar
 
           & ./install/install.ps1 -JdDir $jd -Accent "#ffee00"
           if ($LASTEXITCODE) { throw "install.ps1 exited with $LASTEXITCODE" }
@@ -88,7 +93,7 @@ jobs:
           # 3) Accented .properties rendered (both tokens substituted, none left over).
           $props = Get-Content (Join-Path $jd ".jd-highlighter/flatlaf-defaults/FlatDarkLaf.properties") -Raw
           if (-not $props.Contains('= #ffee00')) { throw "accent not substituted in .properties" }
-          if (-not $props.Contains('Button.default.foreground       = #161616')) { throw "accent-fg not substituted (yellow -> dark)" }
+          if ($props -notmatch 'TabbedPane.selectedForeground = #161616') { throw "accent-fg not substituted (yellow -> dark)" }
           if ($props.Contains('@@')) { throw "leftover @@ token in .properties" }
 
           # 4) Exactly one -javaagent line, idempotent across a second install.
@@ -96,6 +101,8 @@ jobs:
           if (-not (Test-Path $vmo)) { throw "JDownloader2.vmoptions not created" }
           $n = (Get-Content $vmo | Where-Object { $_ -match 'javaagent.*jd-highlighter-agent\.jar' }).Count
           if ($n -ne 1) { throw "expected 1 -javaagent line, got $n" }
+          if (-not (Select-String -Path $vmo -Pattern '^-Djd\.highlighter\.home=' -Quiet)) { throw "jd.highlighter.home line missing" }
+          if (-not (Test-Path (Join-Path $jd ".jd-highlighter/jd-tabler/mapping.json"))) { throw "Tabler set not copied" }
 
           & ./install/install.ps1 -JdDir $jd -Accent "#ffee00"
           if ($LASTEXITCODE) { throw "second install.ps1 exited with $LASTEXITCODE" }
@@ -107,5 +114,15 @@ jobs:
           if ($LASTEXITCODE) { throw "uninstall.ps1 exited with $LASTEXITCODE" }
           if (Select-String -Path $vmo -Pattern 'jd-highlighter-agent\.jar' -Quiet) { throw "agent line not removed on uninstall" }
           if (Test-Path (Join-Path $jd ".jd-highlighter")) { throw ".jd-highlighter dir not removed on uninstall" }
+
+          # 6) The light variant writes the FlatLaf Light files, the stored variant and the templates.
+          & ./install/install.ps1 -JdDir $jd -Accent "#ffee00" -Variant light
+          if ($LASTEXITCODE) { throw "light install.ps1 exited with $LASTEXITCODE" }
+          $null = Get-Content (Join-Path $jd "cfg/laf/FlatLightLaf.json") -Raw | ConvertFrom-Json
+          if ((Get-Content $gui -Raw | ConvertFrom-Json).lookandfeeltheme -ne 'FLATLAF_LIGHT') { throw "light install did not set FLATLAF_LIGHT" }
+          $lp = Get-Content (Join-Path $jd ".jd-highlighter/flatlaf-defaults/FlatLightLaf.properties") -Raw
+          if ($lp -notmatch '@background += #f4f4f4') { throw "light base missing in FlatLightLaf.properties" }
+          if ((Get-Content (Join-Path $jd ".jd-highlighter/variant") -Raw).Trim() -ne 'light') { throw "variant not stored" }
+          if (-not (Test-Path (Join-Path $jd ".jd-highlighter/templates/FlatLightLaf.properties.tmpl"))) { throw "templates not copied" }
 
           Write-Host "PASS installer behavioral test (pwsh $($PSVersionTable.PSVersion))"
