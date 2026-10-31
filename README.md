@@ -79,7 +79,7 @@ accent-free "JD Plain in dark" instead? Use that one; JD Highlighter is the bord
 ## 2. Screenshots
 
 <p align="center">
-  <img src="docs/screenshots/preview.png" alt="JD Highlighter: the download list on a rounded card, menus as pills and the toolbar toggles in the default yellow accent" width="90%">
+  <img src="docs/screenshots/preview.png" alt="JD Highlighter Dark: the download list with five finished and running downloads on a rounded card, menus as pills and the toolbar toggles in the yellow accent" width="90%">
   <br>
   <em>The download list on its card, with the default electric-yellow accent <code>#ffee00</code>.</em>
 </p>
@@ -91,9 +91,9 @@ accent-free "JD Plain in dark" instead? Use that one; JD Highlighter is the bord
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/settings.png" alt="JD Highlighter: the settings with full-height tiles, section cards and borderless fields" width="90%">
+  <img src="docs/screenshots/settings.png" alt="JD Highlighter Dark: the User Interface settings with full-height tiles, section cards and the Accent colour and Appearance rows" width="90%">
   <br>
-  <em>Settings with full-height tiles, section cards and borderless fields.</em>
+  <em>Settings with full-height tiles and section cards. Accent colour and Appearance sit under User Interface.</em>
 </p>
 
 <p align="center">
@@ -106,6 +106,18 @@ accent-free "JD Plain in dark" instead? Use that one; JD Highlighter is the bord
   <img src="docs/screenshots/preview-accent.png" alt="JD Highlighter with a blue accent: the same theme with one colour changed" width="90%">
   <br>
   <em>The same theme with one colour changed: a blue accent <code>#4589ff</code>. Large surfaces stay neutral.</em>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/preview-light.png" alt="JD Highlighter Light: the same download list on #f4f4f4 with white cards" width="90%">
+  <br>
+  <em>JD Highlighter Light: the same design on <code>#f4f4f4</code>.</em>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/settings-light.png" alt="JD Highlighter Light: the User Interface settings with the open Appearance menu listing JD Highlighter Dark and Light and JD Plain Dark and Light" width="90%">
+  <br>
+  <em>The Appearance menu switches the look. In the container it also offers the plain Carbon looks.</em>
 </p>
 
 <br>
