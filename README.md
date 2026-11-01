@@ -42,6 +42,20 @@ readable at <i>any</i> accent hue. Works on the JDownloader <b>desktop app</b> a
 
 <br>
 
+<p align="center">
+  <a href="https://github.com/junkerderprovinz/knightloader"><img src=".github/assets/knightloader-ad.png" alt="KnightLoader downloads everything and looks good doing it: hosters, debrid, torrents, Usenet and videos, and it takes over your JDownloader accounts, rules and download list. Why don't you try?" width="100%"></a>
+</p>
+
+<br>
+
+<p align="center">
+A one-knight job: I build it, keep it running, work through the issues and add what people ask for, until nothing is missing. It is free, with no accounts, no telemetry, no ads and no paid tier. No asterisk anywhere. Nothing readable ever leaves your own walls. Forged on evenings and weekends, with heart and stubbornness.
+</p>
+
+<p align="center">
+If it has earned a place on your server or computer, toss a coin to your knight: it helps cover the costs and keeps the project alive. It also makes this knight's heart beat a little faster. Three ways below, whichever suits you.
+</p>
+
 <!-- give-buttons: written by scripts/gen_download_buttons.py -->
 <p align="center">
   <a href="https://buymeacoffee.com/junkerderprovinz"><img src="https://raw.githubusercontent.com/junkerderprovinz/jd-highlighter/main/.github/assets/download-buttons/buttons.svg?v=d14536303919#svgView(viewBox(4330,0,841.9,245.3))" alt="Buy me a coffee" width="160" height="46.618"></a>
