@@ -172,7 +172,8 @@ JD Highlighter runs on the **desktop app** and in the **Docker container**. On b
 the look are picked in JD itself: **Settings → User Interface** has an **Accent colour** row with a
 colour picker and an **Appearance** row. On the desktop it offers JD Highlighter Dark and JD
 Highlighter Light; in the container also the container's other looks (see below). JD offers a restart after a
-change, and the new look shows once it is back.
+change, and the new look shows once it is back. The **Account bar** switch below the accent shows
+the account icons in the status bar again, without a restart.
 
 ### Desktop (Windows / macOS / Linux)
 
