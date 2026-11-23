@@ -10,14 +10,15 @@
  * Pro Semibold "J" (with the crossbar across its top), reused verbatim from the JDOWNLOADER
  * mark, then the rest of the name in Myriad Pro Black caps. So the leading "JD" reads exactly
  * like the "JD" in JDOWNLOADER. Rendered to vector paths (opentype.js); letters are flat
- * (#161616 light / light on dark). The claim uses Lato (OFL).
+ * (#161616 light / light on dark). The claim uses Bree Light, centred under the wordmark.
  *
  * The Myriad Pro OTFs live at .github/assets/_fonts/ (gitignored and never committed; only the
- * glyph outlines land in the SVG). Nominative use echoing the product's own mark.
+ * glyph outlines land in the SVG). Nominative use echoing the product's own mark. Bree Light
+ * is read as TTF from HOUSE_FONTS (default %LOCALAPPDATA%\halleluja-fonts) and never committed.
  *
  * Deps: `npm i -g @resvg/resvg-js opentype.js`. Run: node .github/assets/gen-banner.mjs
  */
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { tmpdir } from "node:os";
@@ -52,13 +53,9 @@ const REST   = { x: 101.22, y: 205.77, size: 190, ls: -0.04 };  // the rest, Bla
 
 const black = opentype.parse(readFileSync(join(__dir, "_fonts", "MyriadPro-Black.otf")).buffer);
 const semi  = opentype.parse(readFileSync(join(__dir, "_fonts", "MyriadPro-Semibold.otf")).buffer);
-const latoFile = join(tmpdir(), "JD-Lato-Regular.ttf");
-if (!existsSync(latoFile)) {
-  const r = await fetch("https://github.com/google/fonts/raw/main/ofl/lato/Lato-Regular.ttf");
-  if (!r.ok) throw new Error(`Lato fetch ${r.status}`);
-  writeFileSync(latoFile, Buffer.from(await r.arrayBuffer()));
-}
-const lato = opentype.parse(readFileSync(latoFile).buffer);
+// The house typeface is licensed, so it is read from a local folder and never committed.
+const fonts = process.env.HOUSE_FONTS ?? join(process.env.LOCALAPPDATA ?? tmpdir(), "halleluja-fonts");
+const claimFont = opentype.parse(readFileSync(join(fonts, "bree-light.ttf")).buffer);
 
 // Render a text run to a path at (x, baseline) with optional letter-spacing (em). Returns
 // { d, endX }. Reads glyph.path.commands (read-only) so a repeated letter doesn't come back NaN
@@ -108,16 +105,16 @@ const bb = new Resvg(
 const s2 = Math.min(WM_TARGET / bb.height, (W - textX - 80) / bb.width);
 const wmH = bb.height * s2;
 const wmWFit = bb.width * s2;
-const claimAsc = lato.ascender * claimSize / lato.unitsPerEm;
-const claimDesc = -lato.descender * claimSize / lato.unitsPerEm;
+const claimAsc = claimFont.ascender * claimSize / claimFont.unitsPerEm;
+const claimDesc = -claimFont.descender * claimSize / claimFont.unitsPerEm;
 const NAME_CLAIM_GAP = 8;
 const blockH = wmH + NAME_CLAIM_GAP + claimAsc + claimDesc;
 const top = H / 2 - blockH / 2;
 const wmX = textX - bb.x * s2;                             // left-anchor the wordmark's ink at textX
 const wmTop = top - bb.y * s2;                             // wordmark visible top -> `top`
 const claimBaseline = top + wmH + NAME_CLAIM_GAP + claimAsc;
-const claimStartX = textX + (wmWFit - runWidth(lato, CLAIM, claimSize)) / 2;  // claim centred on the wordmark
-const claimPath = runPath(lato, CLAIM, claimStartX, claimBaseline, claimSize).d;
+const claimStartX = textX + (wmWFit - runWidth(claimFont, CLAIM, claimSize)) / 2;  // claim centred on the wordmark
+const claimPath = runPath(claimFont, CLAIM, claimStartX, claimBaseline, claimSize).d;
 
 // Globe: the light card keeps the Carbon-dark body; the dark card lightens it to read on #0d1117.
 const iconRaw = readFileSync(join(__dir, "icon.svg"), "utf8").replace(/<\?xml[^>]*\?>\s*/, "");
